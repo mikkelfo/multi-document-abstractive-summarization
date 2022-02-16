@@ -1,1 +1,3 @@
-pandas
+transformers
+torch
+pytorch_lightning
