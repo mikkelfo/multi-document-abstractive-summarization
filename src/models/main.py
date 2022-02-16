@@ -2,7 +2,7 @@ import torch
 from transformers import ProphetNetForConditionalGeneration
 
 CHUNK_SIZE = 1000
-BATCH_SIZE = 2
+BATCH_SIZE = 100
 model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001, weight_decay=0.0001)
 
