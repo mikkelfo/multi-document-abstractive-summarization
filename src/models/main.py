@@ -2,8 +2,9 @@ import torch
 from transformers import ProphetNetForConditionalGeneration
 
 CHUNK_SIZE = 1000
-BATCH_SIZE = 25
+BATCH_SIZE = 100
 model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
+model.cuda()
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001, weight_decay=0.0001)
 
 for epoch in range(10):
@@ -17,7 +18,7 @@ for epoch in range(10):
         text = torch.load(f'data/processed/tokenized/text/chunk_{i}.pt')
 
         # TODO: Why cant it handle 512 length (reduced to 500)?
-        input_ids, attention_mask, decoder_input_ids, decoder_attention_mask = text['input_ids'][:, :500], text['attention_mask'][:, :500], summary['input_ids'][:, :500], summary['attention_mask'][:, :500]
+        input_ids, attention_mask, decoder_input_ids, decoder_attention_mask = text['input_ids'][:, :500].cuda(), text['attention_mask'][:, :500].cuda(), summary['input_ids'][:, :500].cuda(), summary['attention_mask'][:, :500].cuda()
         # for each batch in file
         for j in range(0, 1000, BATCH_SIZE):
             foo = input_ids[j:(j+BATCH_SIZE)]

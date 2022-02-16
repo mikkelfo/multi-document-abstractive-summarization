@@ -1,3 +1,2 @@
 transformers
 torch
-pytorch_lightning
