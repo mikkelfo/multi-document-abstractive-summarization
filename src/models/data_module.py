@@ -47,9 +47,9 @@ class CNN_DM_Dataset(Dataset):
         for file in os.listdir('data/processed/tokenized/summary'):
             summary = torch.load('data/processed/tokenized/summary/' + file)
             text = torch.load('data/processed/tokenized/text/' + file)
-            self.input_ids = torch.concat((self.input_ids, text['input_ids']))
-            self.attention_mask = torch.concat((self.attention_mask, text['attention_mask']))
-            self.labels = torch.concat((self.labels, summary['input_ids']))
+            self.input_ids = torch.cat((self.input_ids, text['input_ids']))
+            self.attention_mask = torch.cat((self.attention_mask, text['attention_mask']))
+            self.labels = torch.cat((self.labels, summary['input_ids']))
 
     def __getitem__(self, index: int):
         return self.input_ids[index], self.attention_mask[index], self.labels[index]
