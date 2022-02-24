@@ -45,7 +45,6 @@ for epoch in range(EPOCHS):
                 optimizer.step()
 
             chunk_loss = loss.item()
-            print(loss.item())
         # TODO: Should this be here? What happens with the optimizer (and gradient accumulation) at the end of an epoch?
         optimizer.step()
         optimizer.zero_grad()
