@@ -44,17 +44,11 @@ for epoch in range(EPOCHS):
             # Gradient accumulation
             if batch_idx % GRADIENT_ACCUMULATION_STEPS == 0 and batch_idx != 0:
                 optimizer.step()
-                # optimizer.zero_grad()
-                # The below code should be more efficient than optimizer.zero_grad()
-                for param in model.parameters():
-                    param.grad = None
+                optimizer.zero_grad(set_to_none=True)
 
             chunk_loss = loss.detach()
         optimizer.step()
-        # optimizer.zero_grad()
-        # The below code should be more efficient than optimizer.zero_grad()
-        for param in model.parameters():
-            param.grad = None
+        optimizer.zero_grad(set_to_none=True)
 
         if chunk_idx % 10 == 0 and chunk_idx != 0:
             print(f'     Chunk {chunk_idx} loss: {chunk_loss}')
