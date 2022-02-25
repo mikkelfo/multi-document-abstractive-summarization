@@ -23,9 +23,11 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
     os.mkdir('checkpoints')
+run_num = len(os.listdir('checkpoints'))
 
 ''' WANDB '''
 wandb.init(project="abstractive-summarization", entity="mikkelfo")
+wandb.watch(model)
 
 
 for epoch in range(EPOCHS):
@@ -43,9 +45,9 @@ for epoch in range(EPOCHS):
             # Gradient accumulation
             if batch_idx % GRADIENT_ACCUMULATION_STEPS == 0 and batch_idx != 0:
                 optimizer.step()
+                optimizer.zero_grad()
 
             chunk_loss = loss.item()
-        # TODO: Should this be here? What happens with the optimizer (and gradient accumulation) at the end of an epoch?
         optimizer.step()
         optimizer.zero_grad()
 
@@ -59,5 +61,4 @@ for epoch in range(EPOCHS):
     print(f'----------     Epoch {epoch} loss: {epoch_loss}     ----------')
     print()
 
-    run = len(os.listdir('checkpoints'))
-    torch.save(model.state_dict(), f'checkpoints/run-{run}_epoch{epoch}')
+    torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}')
