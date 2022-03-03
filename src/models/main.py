@@ -1,8 +1,9 @@
 import torch
-from transformers import ProphetNetForConditionalGeneration
 import os
 from utils import process_chunk
 import wandb
+from torch.cuda.amp import autocast
+from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
 BATCH_SIZE = 4
@@ -13,11 +14,7 @@ N_CHUNKS = len(os.listdir('data/processed/tokenized/cnn-dm/summary'))
 
 
 ''' INITIALIZATION '''
-model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
-model = torch.nn.DataParallel(model)
-model.to('cuda')
-for param in list(model.parameters())[:-1]:
-    param.requires_grad = False
+model = ProphetNetAutocast()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
 # For model checkpointing
@@ -37,16 +34,19 @@ for epoch in range(EPOCHS):
     for chunk_idx in range(N_CHUNKS):
         chunk_loss = 0
         for batch_idx, batch in enumerate(process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE)):
+            # batch = [r.to('cuda') for r in batch]
             input_ids, attention_mask, labels = batch
-            loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels).loss.sum()
-            loss.backward()
+
+            with autocast():
+                loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                loss.backward()
 
             # Gradient accumulation
             if batch_idx % GRADIENT_ACCUMULATION_STEPS == 0 and batch_idx != 0:
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
 
-            chunk_loss = loss.item()
+            chunk_loss = loss.detach()
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
 
