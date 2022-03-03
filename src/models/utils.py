@@ -15,7 +15,7 @@ def process_chunk(chunk_idx, token_length, batch_size):
 
 def process_chunk_da(chunk_idx, token_length, batch_size):
     summary = torch.load(f'data/processed/tokenized/danewsroom/abstractive/summary/chunk_{chunk_idx}.pt')
-    text = torch.load(f'data/processed/tokenized/danewsroom/abstractivetext/chunk_{chunk_idx}.pt')
+    text = torch.load(f'data/processed/tokenized/danewsroom/abstractive/text/chunk_{chunk_idx}.pt')
 
     input_ids, attention_mask, = text['input_ids'][:, :token_length].to('cuda'), text['attention_mask'][:, :token_length].to('cuda')
     decoder_input_ids, _ = summary['input_ids'][:, :token_length].to('cuda'), summary['attention_mask'][:, :token_length].to('cuda')
