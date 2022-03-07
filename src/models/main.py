@@ -8,7 +8,7 @@ from model import ProphetNetAutocast
 ''' CONSTANTS '''
 BATCH_SIZE = 4
 EPOCHS = 10
-TOKEN_LENGTH = 400
+TOKEN_LENGTH = 350
 GRADIENT_ACCUMULATION_STEPS = 16
 N_CHUNKS = len(os.listdir('data/processed/tokenized/cnn-dm/summary'))
 
