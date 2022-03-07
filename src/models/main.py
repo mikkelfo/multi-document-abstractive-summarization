@@ -15,8 +15,8 @@ N_CHUNKS = len(os.listdir('data/processed/tokenized/cnn-dm/summary'))
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=False)
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0003)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+# optimizer = torch.optim.Adam(model.parameters(), lr=0.0003)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
