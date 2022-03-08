@@ -12,7 +12,7 @@ TOKEN_LENGTH = 350
 N_CHUNKS = 50
 
 ''' WANDB'''
-wandb.init(project="abstractive-summarization", entity="mikkelfo")
+wandb.init(project="abstractive-summarization-sweep", entity="mikkelfo")
 wandb.config.learning_rate = 0.001
 wandb.config.momentum = 0.9
 wandb.config.gradient_accumulation_steps = 16
