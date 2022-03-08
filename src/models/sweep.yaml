@@ -1,4 +1,4 @@
-program: main.py
+program: src/models/main.py
 method: bayes
 metric:
   name: Chunk loss
