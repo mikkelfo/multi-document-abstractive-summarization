@@ -8,8 +8,8 @@ parameters:
     min: 1e-05
     max: 0.01
   momentum:
-    min: 0
-    max: 1
+    min: 0.0
+    max: 1.0
   weight_decay:
     min: 1e-05
     max: 0.001
