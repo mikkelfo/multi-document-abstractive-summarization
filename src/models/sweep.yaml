@@ -1,9 +1,9 @@
 project: sweep-abstractive-summarization
 entity: mikkelfo
-program: src/models/main.py
+program: src/models/sweep.py
 method: bayes
 metric:
-  name: Chunk loss
+  name: Epoch validation loss
   goal: minimize
 parameters:
   learning_rate:

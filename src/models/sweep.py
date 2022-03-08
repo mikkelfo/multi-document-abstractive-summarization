@@ -10,7 +10,7 @@ BATCH_SIZE = 4
 EPOCHS = 1
 TOKEN_LENGTH = 350
 N_CHUNKS = 50
-TRAIN_LOGGING_STEP = 5
+AGGR_LOGGING_STEP = 5
 CHECKPOINTING_STEP = 50
 VALIDATION_LOGGING_STEP = 25
 
@@ -59,7 +59,7 @@ for epoch in range(EPOCHS):
 
         # Logging aggregated chunk loss
         aggr_loss += train_loss
-        if (chunk_idx + 1) % TRAIN_LOGGING_STEP:
+        if (chunk_idx + 1) % AGGR_LOGGING_STEP:
             wandb.log({'5 Chunk train loss': aggr_loss}, step=chunk_idx)
             aggr_loss = 0
 
@@ -74,7 +74,7 @@ for epoch in range(EPOCHS):
     wandb.log({'Epoch train loss': epoch_loss}, step=epoch)
 
     validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
-    wandb.log({'Validation loss': validation_loss}, step=epoch)
+    wandb.log({'Epoch validation loss': validation_loss}, step=epoch)
 
 
     
