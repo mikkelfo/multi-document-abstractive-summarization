@@ -9,10 +9,10 @@ parameters:
     max: 0.01
   momentum:
     min: 0.0
-    max: 1.0
+    max: 5.0
   weight_decay:
     min: 1e-05
-    max: 0.001
+    max: 0.01
   gradient_accumulation_steps:
     min: 4
     max: 64

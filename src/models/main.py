@@ -7,18 +7,15 @@ from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
 BATCH_SIZE = 4
-EPOCHS = 10
+EPOCHS = 1
 TOKEN_LENGTH = 350
-N_CHUNKS = len(os.listdir('data/processed/tokenized/cnn-dm/summary'))
-HYPERPARAM_DEFAULTS = dict(
-    learning_rate = 0.001,
-    momentum = 0.9,
-    gradient_accumulation_steps = 16
-)
-
+N_CHUNKS = 50
 
 ''' WANDB'''
-wandb.init(project="abstractive-summarization", entity="mikkelfo", config=HYPERPARAM_DEFAULTS)
+wandb.init(project="abstractive-summarization", entity="mikkelfo")
+wandb.config.learning_rate = 0.001
+wandb.config.momentum = 0.9
+wandb.config.gradient_accumulation_steps = 16
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=False)
@@ -37,7 +34,7 @@ for epoch in range(EPOCHS):
     print(f'*****     EPOCH {epoch}     *****')
     epoch_loss = 0
     # for each file
-    for chunk_idx in range(50):
+    for chunk_idx in range(N_CHUNKS):
         chunk_loss = 0
         for batch_idx, batch in enumerate(process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE)):
             # batch = [r.to('cuda') for r in batch]
