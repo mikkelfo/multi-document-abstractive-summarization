@@ -1,3 +1,5 @@
+project: sweep-abstractive-summarization
+entity: mikkelfo
 program: src/models/main.py
 method: bayes
 metric:
