@@ -39,6 +39,7 @@ def validate(model, TOKEN_LENGTH, BATCH_SIZE):
             input_ids, attention_mask, labels = batch
             with autocast():
                 loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                loss.backward()
             val_loss += loss.detach()
         break
     model.train()
