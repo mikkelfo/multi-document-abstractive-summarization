@@ -15,14 +15,13 @@ CHECKPOINTING_STEP = 50
 VALIDATION_LOGGING_STEP = 25
 
 ''' WANDB'''
-wandb.init(project="abstractive-summarization-sweep", entity="mikkelfo")
+wandb.init(project="bugfixing", entity="mikkelfo")
 wandb.config.learning_rate = 0.001
 wandb.config.momentum = 0.9
 wandb.config.gradient_accumulation_steps = 16
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=False)
-model.train()
 optimizer = torch.optim.SGD(model.parameters(), lr=wandb.config.learning_rate, momentum=wandb.config.momentum)
 
 # For model checkpointing
@@ -33,7 +32,7 @@ run_num = len(os.listdir('checkpoints'))
 ''' WANDB '''
 wandb.watch(model)
 
-
+model.train()
 for epoch in range(EPOCHS):
     epoch_loss = 0
     aggr_loss = 0
@@ -45,14 +44,14 @@ for epoch in range(EPOCHS):
 
             with autocast():
                 loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
-                loss.backward()
+            loss.backward()
 
             # Gradient accumulation
             if (batch_idx + 1) % wandb.config.gradient_accumulation_steps == 0:
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
 
-            train_loss = loss.detach()
+            train_loss += loss.detach()
 
         # Cleans up after chunk 
         optimizer.step()
