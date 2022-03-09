@@ -16,6 +16,6 @@ class ProphetNetAutocast(torch.nn.Module):
 
     @autocast()
     def forward(self, input_ids, attention_mask, labels):
-        x = self.model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        x = self.model(input_ids=input_ids, attention_mask=attention_mask, labels=labels, use_cache=False)
         return x.loss.sum()
 
