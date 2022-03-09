@@ -2,7 +2,6 @@ import torch
 from torch.cuda.amp import autocast
 import os
 
-from model import ProphetNetAutocast
 
 def process_chunk(chunk_idx, token_length, batch_size, split):
     summary = torch.load(f'data/processed/cnn-dm/summary/{split}/chunk_{chunk_idx}.pt')
@@ -42,9 +41,4 @@ def validate(model, TOKEN_LENGTH, BATCH_SIZE):
                 val_loss += loss.detach()
     model.train()
     return val_loss
-
-if __name__ == '__main__':
-    model = ProphetNetAutocast(freeze_layers=False)
-    loss = validate(model, 350, 4)
-    print(loss)
 

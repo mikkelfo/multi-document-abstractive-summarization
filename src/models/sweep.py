@@ -22,7 +22,7 @@ wandb.config.gradient_accumulation_steps = 16
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=False)
-optimizer = torch.optim.SGD(model.parameters(), lr=wandb.config.learning_rate, momentum=wandb.config.momentum)
+optimizer = torch.optim.SGD(model.parameters(), lr=wandb.config.learning_rate, momentum=wandb.config.momentum, weight_decay=wandb.config.weight_decay)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
@@ -72,8 +72,6 @@ for epoch in range(EPOCHS):
 
     # torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
     wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=chunk_idx)
-
-    torch.cuda.empty_cache()
 
     model.eval()
     val_loss = 0
