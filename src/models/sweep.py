@@ -60,10 +60,10 @@ for epoch in range(EPOCHS):
         # Logging aggregated chunk loss
         aggr_loss += train_loss
         if (chunk_idx + 1) % AGGR_LOGGING_STEP:
-            wandb.log({'5 Chunk train loss': aggr_loss}, step=chunk_idx)
+            wandb.log({'5 Chunk train loss': aggr_loss})
             aggr_loss = 0
 
-        wandb.log({'Train loss': train_loss}, step=chunk_idx)
+        wandb.log({'Train loss': train_loss})
         epoch_loss += train_loss
 
         # Checkpointing every 50 steps
@@ -71,10 +71,12 @@ for epoch in range(EPOCHS):
         #     torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_step{chunk_idx}')
 
     # torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
-    wandb.log({'Epoch train loss': epoch_loss}, step=epoch)
+    wandb.log({'Epoch train loss': epoch_loss})
+
+    torch.cuda.empty_cache()
 
     validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
-    wandb.log({'Epoch validation loss': validation_loss}, step=epoch)
+    wandb.log({'Epoch validation loss': validation_loss})
 
 
     
