@@ -8,7 +8,6 @@ class ProphetNetAutocast(torch.nn.Module):
         self.model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
         self.model = torch.nn.DataParallel(self.model)
         self.model.to('cuda')
-        self.model.train()
 
         # Freeze all but last layer (lm_head: Linear(in_features=1024, out_features=30522, bias=False) )
         if freeze_layers:
