@@ -22,6 +22,7 @@ wandb.config.gradient_accumulation_steps = 16
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=False)
+model.train()
 optimizer = torch.optim.SGD(model.parameters(), lr=wandb.config.learning_rate, momentum=wandb.config.momentum)
 
 # For model checkpointing
