@@ -60,7 +60,7 @@ for epoch in range(EPOCHS):
         # Logging aggregated chunk loss
         aggr_loss += train_loss
         if (chunk_idx + 1) % AGGR_LOGGING_STEP == 0:
-            wandb.log({'5 Chunk train loss': aggr_loss}, step=chunk_idx)
+            wandb.log({'5 Chunk train loss': aggr_loss / AGGR_LOGGING_STEP}, step=chunk_idx)
             aggr_loss = 0
 
         wandb.log({'Train loss': train_loss}, step=chunk_idx)
@@ -71,21 +71,22 @@ for epoch in range(EPOCHS):
         #     torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_step{chunk_idx}')
 
     # torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
-    wandb.log({'Epoch train loss': epoch_loss}, step=chunk_idx)
+    wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=chunk_idx)
 
     torch.cuda.empty_cache()
 
     model.eval()
     val_loss = 0
+    N_CHUNKS_VALIDATION = len(os.listdir('data/processed/cnn-dm/text/validation'))
     with torch.no_grad():
-        for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/validation'))):
+        for chunk_idx in range(N_CHUNKS_VALIDATION):
             for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
                 input_ids, attention_mask, labels = batch
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
                 val_loss += loss.detach()
 
-    wandb.log({'Epoch validation loss': val_loss}, step=chunk_idx)
+    wandb.log({'Epoch validation loss': val_loss / N_CHUNKS_VALIDATION}, step=chunk_idx)
 
 
     
