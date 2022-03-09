@@ -75,8 +75,17 @@ for epoch in range(EPOCHS):
 
     torch.cuda.empty_cache()
 
-    validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
-    wandb.log({'Epoch validation loss': validation_loss}, step=chunk_idx)
+    model.eval()
+    val_loss = 0
+    with torch.no_grad():
+        for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/validation'))):
+            for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
+                input_ids, attention_mask, labels = batch
+                with autocast():
+                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                val_loss += loss.detach()
+
+    wandb.log({'Epoch validation loss': val_loss}, step=chunk_idx)
 
 
     

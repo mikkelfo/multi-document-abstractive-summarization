@@ -33,15 +33,13 @@ def process_chunk_da(chunk_idx, token_length, batch_size):
 def validate(model, TOKEN_LENGTH, BATCH_SIZE):
     val_loss = 0
     model.eval()
-    # with torch.no_grad():
-    for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/train'))):
-        for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train'):
-            input_ids, attention_mask, labels = batch
-            with autocast():
-                loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
-                loss.backward()
-            val_loss += loss.detach()
-        break
+    with torch.no_grad():
+        for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/train'))):
+            for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train'):
+                input_ids, attention_mask, labels = batch
+                with autocast():
+                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                val_loss += loss.detach()
     model.train()
     return val_loss
 
