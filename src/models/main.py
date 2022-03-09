@@ -74,7 +74,5 @@ for epoch in range(EPOCHS):
     wandb.log({'Epoch train loss': epoch_loss}, step=epoch)
 
     validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
-    wandb.log({'Validation loss': validation_loss}, step=epoch)
-
-
+    wandb.log({'Epoch validation loss': validation_loss}, step=epoch)
     

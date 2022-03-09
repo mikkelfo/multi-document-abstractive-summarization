@@ -2,6 +2,8 @@ import torch
 from torch.cuda.amp import autocast
 import os
 
+from model import ProphetNetAutocast
+
 def process_chunk(chunk_idx, token_length, batch_size, split):
     summary = torch.load(f'data/processed/cnn-dm/summary/{split}/chunk_{chunk_idx}.pt')
     text = torch.load(f'data/processed/cnn-dm/text/{split}/chunk_{chunk_idx}.pt')
@@ -9,7 +11,7 @@ def process_chunk(chunk_idx, token_length, batch_size, split):
     input_ids, attention_mask, = text['input_ids'][:, :token_length].to('cuda'), text['attention_mask'][:, :token_length].to('cuda')
     decoder_input_ids, _ = summary['input_ids'][:, :token_length].to('cuda'), summary['attention_mask'][:, :token_length].to('cuda')
 
-    N = len(input_ids)  # Since it's not exactly 1000 due to the discarded stories
+    N = len(input_ids)  # 1024
     for i in range(0, N, batch_size):
         batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)]
         yield batch
@@ -22,7 +24,7 @@ def process_chunk_da(chunk_idx, token_length, batch_size):
     input_ids, attention_mask, = text['input_ids'][:, :token_length].to('cuda'), text['attention_mask'][:, :token_length].to('cuda')
     decoder_input_ids, _ = summary['input_ids'][:, :token_length].to('cuda'), summary['attention_mask'][:, :token_length].to('cuda')
 
-    N = len(input_ids)  # Since it's not exactly 1000 due to the discarded stories
+    N = len(input_ids)  # 1024
     for i in range(0, N, batch_size):
         batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)]
         yield batch
@@ -38,5 +40,12 @@ def validate(model, TOKEN_LENGTH, BATCH_SIZE):
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
                 val_loss += loss.detach()
-
+            break
+    model.train()
     return val_loss
+
+if __name__ == '__main__':
+    model = ProphetNetAutocast(freeze_layers=False)
+    loss = validate(model, 350, 4)
+    print(loss)
+
