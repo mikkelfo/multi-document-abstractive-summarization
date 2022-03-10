@@ -11,7 +11,7 @@ BATCH_SIZE = 64
 TOKEN_LENGTH = 300
 N_CHUNKS = len(os.listdir('data/processed/cnn-dm/summary/train'))
 N_CHUNKS_VALIDATION = len(os.listdir('data/processed/cnn-dm/text/validation'))
-GRADIENT_ACCUMULATION_STEP = 2
+GRADIENT_ACCUMULATION_STEP = 8
 CHECKPOINTING_STEP = 50
 
 ''' INITIALIZATION '''
@@ -47,7 +47,6 @@ for epoch in range(EPOCHS):
                 optimizer.zero_grad(set_to_none=True)
 
             train_loss += loss.detach()
-            break
 
         wandb.log({'Train loss': train_loss}, step=(epoch*N_CHUNKS)+chunk_idx)
         epoch_loss += train_loss
@@ -56,9 +55,9 @@ for epoch in range(EPOCHS):
         if (chunk_idx + 1) % CHECKPOINTING_STEP == 0:
             torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_step{chunk_idx}')
             validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
-            wandb.log({'Epoch validation loss': validation_loss / N_CHUNKS_VALIDATION}, step=(epoch*N_CHUNKS)+chunk_idx)
+            wandb.log({'Validation loss': validation_loss / N_CHUNKS_VALIDATION}, step=(epoch*N_CHUNKS)+chunk_idx)
 
     torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
-    wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=epoch)
+    wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=(epoch*N_CHUNKS)+chunk_idx)
     
     
