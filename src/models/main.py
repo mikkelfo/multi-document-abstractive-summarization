@@ -16,7 +16,7 @@ CHECKPOINTING_STEP = 50
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=True)
-optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
