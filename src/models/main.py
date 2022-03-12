@@ -6,17 +6,18 @@ from torch.cuda.amp import autocast
 from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
-EPOCHS = 2
+EPOCHS = 10
 BATCH_SIZE = 64
 TOKEN_LENGTH = 300
 N_CHUNKS = len(os.listdir('data/processed/cnn-dm/summary/train'))
 N_CHUNKS_VALIDATION = len(os.listdir('data/processed/cnn-dm/text/validation'))
 GRADIENT_ACCUMULATION_STEP = 8
 CHECKPOINTING_STEP = 50
+TRAIN_LOG_STEP = 5
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(freeze_layers=True)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
@@ -30,7 +31,7 @@ wandb.watch(model)
 model.train()
 for epoch in range(EPOCHS):
     epoch_loss = 0
-
+    aggr_loss = 0
     for chunk_idx in range(N_CHUNKS):
         train_loss = 0
 
@@ -49,7 +50,13 @@ for epoch in range(EPOCHS):
             train_loss += loss.detach()
 
         wandb.log({'Train loss': train_loss}, step=(epoch*N_CHUNKS)+chunk_idx)
+        aggr_loss += train_loss
         epoch_loss += train_loss
+
+        # Logging train loss every 5 chunks
+        if (chunk_idx + 1) % TRAIN_LOG_STEP == 0:
+            wandb.log({f'Train loss {TRAIN_LOG_STEP}': aggr_loss / TRAIN_LOG_STEP}, step=(epoch*N_CHUNKS)+chunk_idx)
+            aggr_loss = 0
 
         # Checkpointing and validation every 50 steps
         if (chunk_idx + 1) % CHECKPOINTING_STEP == 0:
