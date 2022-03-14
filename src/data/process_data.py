@@ -3,34 +3,58 @@ import json
 import pandas as pd
 import os
 import string
-from rouge import Rouge
 from pathlib import Path
 import pickle
+import json
+import random
+import math
+
+random.seed(10)
 
 ''' 
     *****     CNN/Dailymail     ***** 
 '''
-def chunk_files(chunk_dir, chunk_size=1000):
-    '''
-        Chunks the raw files
-            The files are processed by process_stories
-            and cleaned by clean_lines
+def process_cnndm():
+    data = []
+    for media in ['cnn', 'dailymail']:
+        dir = 'data/raw/' + media + '/stories'
+        files = list(Path(dir).glob('*.story'))
 
-        Note: Each chunk is not exactly 1000 stories, as empty stories (n=114) are discarded
-    '''
-    media = chunk_dir.split("/")[0]
-    dir_path = 'data/raw/chunks/' + media
-    if not os.path.isdir(dir_path):
-        os.mkdir(dir_path)
-    num_chunk = 0
-    files = list(Path('data/raw/' + chunk_dir).glob('*.story'))
-    for i in range(0, len(files), chunk_size):
-        chunk = files[i:(i+chunk_size)]
-        processed_chunk = process_stories(chunk, media)    # Note: Chunk_size is not exactly 1000 due to the discard behaviour in process_stories
-        with open(f'{dir_path}/chunk_{num_chunk}.pickle', 'wb') as handle:
-            pickle.dump(processed_chunk, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            print("Chunk", num_chunk)
-        num_chunk += 1
+        for file in files:
+            text = file.read_text(encoding="utf-8")
+            # Splits story and highlights
+            story, *highlights = text.split("@highlight")
+            story = clean_lines(story.split('\n\n'), media)
+            highlight = clean_lines(highlights, media)
+
+            # Skip empty articles with empty story/highlight
+            if story == '' or highlights == []:
+                continue
+
+            data.append((story, highlight))
+    file = open('data/processed/cnn-dm.json', 'w')
+    json.dump(data, file, indent=4)
+
+
+def split_cnndm(ratios=[0.9, 0.05, 0.05]):
+    assert sum(ratios) == 1
+    file = open('data/processed/cnn-dm.json', 'r')
+    data = json.load(file)
+    N = len(data)
+
+    train = math.ceil(N*ratios[0])
+    val = math.ceil(N*ratios[1])
+    test = math.ceil(N*ratios[2])
+
+    random.shuffle(data)
+
+    val_data = data[:val]
+    test_data = data[val:val+test]
+    train_data = data[val+test:]
+
+    for name, data in zip(['train', 'test', 'validation'], [train_data, test_data, val_data]):
+        with open(f'data/processed/cnn-dm_{name}.json', 'w') as file:
+            json.dump(data, file, indent=4)
 
 
 # CNN cleaning taken from: https://machinelearningmastery.com/prepare-news-articles-text-summarization/
@@ -60,31 +84,6 @@ def clean_lines(lines, media):
     return ' '.join(cleaned)
 
 
-def process_stories(chunk, media):
-    '''
-        
-        Note: Discards empty stories
-    '''
-    processed_chunk = {
-        'story': [],
-        'highlight': []
-    }
-    for file in chunk:
-        text = file.read_text(encoding="utf-8")
-        # Splits story and highlights
-        story, *highlights = text.split("@highlight")
-        story = clean_lines(story.split('\n\n'), media)
-        highlight = clean_lines(highlights, media)
-
-        if story == '' or highlights == []:
-            continue
-        
-        processed_chunk['story'].append(story)
-        processed_chunk['highlight'].append(highlight)
-
-    return processed_chunk
-
-
 ''' 
     *****     DaNewsroom     *****
 '''
@@ -97,5 +96,5 @@ def gz_to_csv(file="danewsroom.jsonl.gz"):
 
 
 if __name__ == '__main__':
-    chunk_files('cnn/stories')
-    chunk_files('dailymail/stories')
+    # process_cnndm()
+    split_cnndm()

@@ -1,22 +1,23 @@
 import torch
 import os
-from utils import process_chunk
+from utils import process_chunk, validate
 import wandb
 from torch.cuda.amp import autocast
 from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
-BATCH_SIZE = 4
 EPOCHS = 10
-TOKEN_LENGTH = 350
-GRADIENT_ACCUMULATION_STEPS = 16
-N_CHUNKS = len(os.listdir('data/processed/tokenized/cnn-dm/summary'))
-
+BATCH_SIZE = 64
+TOKEN_LENGTH = 300
+N_CHUNKS = len(os.listdir('data/processed/cnn-dm/summary/train'))
+N_CHUNKS_VALIDATION = len(os.listdir('data/processed/cnn-dm/text/validation'))
+GRADIENT_ACCUMULATION_STEP = 8
+CHECKPOINTING_STEP = 50
+TRAIN_LOG_STEP = 5
 
 ''' INITIALIZATION '''
-model = ProphetNetAutocast(freeze_layers=False)
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0003)
+model = ProphetNetAutocast(freeze_layers=True)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
@@ -24,41 +25,46 @@ if not os.path.isdir('checkpoints'):
 run_num = len(os.listdir('checkpoints'))
 
 ''' WANDB '''
-wandb.init(project="abstractive-summarization", entity="mikkelfo")
+wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
 wandb.watch(model)
 
-
+model.train()
 for epoch in range(EPOCHS):
-    print(f'*****     EPOCH {epoch}     *****')
     epoch_loss = 0
-    # for each file
+    aggr_loss = 0
     for chunk_idx in range(N_CHUNKS):
-        chunk_loss = 0
-        for batch_idx, batch in enumerate(process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE)):
-            # batch = [r.to('cuda') for r in batch]
+        train_loss = 0
+
+        for batch_idx, batch in enumerate(process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train')):
             input_ids, attention_mask, labels = batch
 
             with autocast():
                 loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
-                loss.backward()
+            loss.backward()
 
             # Gradient accumulation
-            if batch_idx % GRADIENT_ACCUMULATION_STEPS == 0 and batch_idx != 0:
+            if (batch_idx + 1) % GRADIENT_ACCUMULATION_STEP == 0:
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
 
-            chunk_loss = loss.detach()
-        optimizer.step()
-        optimizer.zero_grad(set_to_none=True)
+            train_loss += loss.detach()
 
-        if chunk_idx % 10 == 0 and chunk_idx != 0:
-            print(f'     Chunk {chunk_idx} loss: {chunk_loss}')
+        wandb.log({'Train loss': train_loss}, step=(epoch*N_CHUNKS)+chunk_idx)
+        aggr_loss += train_loss
+        epoch_loss += train_loss
 
-        wandb.log({'Chunk loss': chunk_loss})
-        epoch_loss += chunk_loss
+        # Logging train loss every 5 chunks
+        if (chunk_idx + 1) % TRAIN_LOG_STEP == 0:
+            wandb.log({f'Train loss {TRAIN_LOG_STEP}': aggr_loss / TRAIN_LOG_STEP}, step=(epoch*N_CHUNKS)+chunk_idx)
+            aggr_loss = 0
 
-    wandb.log({'Epoch loss': epoch_loss})
-    print(f'----------     Epoch {epoch} loss: {epoch_loss}     ----------')
-    print()
+        # Checkpointing and validation every 50 steps
+        if (chunk_idx + 1) % CHECKPOINTING_STEP == 0:
+            torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_step{chunk_idx}')
+            validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
+            wandb.log({'Validation loss': validation_loss / N_CHUNKS_VALIDATION}, step=(epoch*N_CHUNKS)+chunk_idx)
 
-    torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}')
+    torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
+    wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=(epoch*N_CHUNKS)+chunk_idx)
+    
+    

@@ -1,13 +1,16 @@
 import torch
+from torch.cuda.amp import autocast
+import os
 
-def process_chunk(chunk_idx, token_length, batch_size):
-    summary = torch.load(f'data/processed/tokenized/cnn-dm/summary/chunk_{chunk_idx}.pt')
-    text = torch.load(f'data/processed/tokenized/cnn-dm/text/chunk_{chunk_idx}.pt')
 
-    input_ids, attention_mask, = text['input_ids'][:, :token_length].to('cuda'), text['attention_mask'][:, :token_length].to('cuda')
-    decoder_input_ids, _ = summary['input_ids'][:, :token_length].to('cuda'), summary['attention_mask'][:, :token_length].to('cuda')
+def process_chunk(chunk_idx, token_length, batch_size, split):
+    summary = torch.load(f'data/processed/cnn-dm/summary/{split}/chunk_{chunk_idx}.pt')
+    text = torch.load(f'data/processed/cnn-dm/text/{split}/chunk_{chunk_idx}.pt')
 
-    N = len(input_ids)  # Since it's not exactly 1000 due to the discarded stories
+    input_ids, attention_mask, = text['input_ids'][:, :token_length], text['attention_mask'][:, :token_length]
+    decoder_input_ids, _ = summary['input_ids'][:, :token_length], summary['attention_mask'][:, :token_length]
+
+    N = len(input_ids)  # 1024
     for i in range(0, N, batch_size):
         batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)]
         yield batch
@@ -17,10 +20,25 @@ def process_chunk_da(chunk_idx, token_length, batch_size):
     summary = torch.load(f'data/processed/tokenized/danewsroom/abstractive/summary/chunk_{chunk_idx}.pt')
     text = torch.load(f'data/processed/tokenized/danewsroom/abstractive/text/chunk_{chunk_idx}.pt')
 
-    input_ids, attention_mask, = text['input_ids'][:, :token_length].to('cuda'), text['attention_mask'][:, :token_length].to('cuda')
-    decoder_input_ids, _ = summary['input_ids'][:, :token_length].to('cuda'), summary['attention_mask'][:, :token_length].to('cuda')
+    input_ids, attention_mask, = text['input_ids'][:, :token_length], text['attention_mask'][:, :token_length]
+    decoder_input_ids, _ = summary['input_ids'][:, :token_length], summary['attention_mask'][:, :token_length]
 
-    N = len(input_ids)  # Since it's not exactly 1000 due to the discarded stories
+    N = len(input_ids)  # 1024
     for i in range(0, N, batch_size):
         batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)]
         yield batch
+
+
+def validate(model, TOKEN_LENGTH, BATCH_SIZE):
+    val_loss = 0
+    model.eval()
+    with torch.no_grad():
+        for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/validation'))):
+            for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
+                input_ids, attention_mask, labels = batch
+                with autocast():
+                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                val_loss += loss.detach()
+    model.train()
+    return val_loss
+
