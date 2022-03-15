@@ -22,7 +22,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
     os.mkdir('checkpoints')
-run_num = len(os.listdir('checkpoints'))
+    run_num = next(os.walk('checkpoints'))[1]
+    if not os.path.isdir(f'checkpoints/{run_num}'):
+        os.mkdir(f'checkpoints/{run_num}')
 
 ''' WANDB '''
 wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
@@ -37,7 +39,6 @@ for epoch in range(EPOCHS):
 
         for batch_idx, batch in enumerate(process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train')):
             input_ids, attention_mask, labels = batch
-
             with autocast():
                 loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
             loss.backward()
@@ -60,11 +61,11 @@ for epoch in range(EPOCHS):
 
         # Checkpointing and validation every 50 steps
         if (chunk_idx + 1) % CHECKPOINTING_STEP == 0:
-            torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_step{chunk_idx}')
+            torch.save(model.state_dict(), f'checkpoints/{run_num}/epoch{epoch}_step{chunk_idx}')
             validation_loss = validate(model, TOKEN_LENGTH, BATCH_SIZE)
             wandb.log({'Validation loss': validation_loss / N_CHUNKS_VALIDATION}, step=(epoch*N_CHUNKS)+chunk_idx)
 
-    torch.save(model.state_dict(), f'checkpoints/run-{run_num}_epoch{epoch}_end')
+    torch.save(model.state_dict(), f'checkpoints/{run_num}/epoch{epoch}_end')
     wandb.log({'Epoch train loss': epoch_loss / N_CHUNKS}, step=(epoch*N_CHUNKS)+chunk_idx)
     
     
