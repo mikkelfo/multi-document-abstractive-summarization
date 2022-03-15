@@ -47,6 +47,7 @@ for epoch in range(EPOCHS):
             if (batch_idx + 1) % GRADIENT_ACCUMULATION_STEP == 0:
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
 
             train_loss += loss.detach()
 
