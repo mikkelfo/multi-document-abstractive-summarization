@@ -16,7 +16,7 @@ CHECKPOINTING_STEP = 50
 TRAIN_LOG_STEP = 5
 
 ''' INITIALIZATION '''
-model = ProphetNetAutocast(freeze_layers=True)
+model = ProphetNetAutocast(freeze_layers=False)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
 # For model checkpointing
