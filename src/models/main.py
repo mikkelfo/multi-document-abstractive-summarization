@@ -22,7 +22,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
     os.mkdir('checkpoints')
-run_num = next(os.walk('checkpoints'))[1]
+run_num = len(next(os.walk('checkpoints'))[1])
 if not os.path.isdir(f'checkpoints/{run_num}'):
     os.mkdir(f'checkpoints/{run_num}')
 
