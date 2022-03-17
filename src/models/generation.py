@@ -6,7 +6,6 @@ import json
 
 def generate_summaries(model_dir, data_dir='data/processed/cnn-dm/text/test'):
     model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
-    model.eval()
     model.to('cuda')
     tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 
