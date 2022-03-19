@@ -28,7 +28,7 @@ def generate_summaries(model_dir, data_dir='data/processed/cnn-dm/text/test'):
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
                 summaries += gen_summary
         
-        file = open(f'models/summary/{checkpoint}', 'w')
+        file = open(f'models/summary-unfrozen/{checkpoint}.json', 'w')
         json.dump(summaries, file, indent=4)
         print()
 
@@ -44,4 +44,4 @@ def clean_dic(dic):
 
 
 if __name__ == '__main__':
-    generate_summaries('models/frozen-cnndm')
+    generate_summaries('models/unfrozen-cnn')
