@@ -9,8 +9,8 @@ def generate_summaries(model_dir, data_dir='data/processed/cnn-dm/text/test'):
     model.to('cuda')
     tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 
-    if not os.path.isdir('models/summary'):
-        os.mkdir('models/summary')
+    if not os.path.isdir('models/summary-unfrozen'):
+        os.mkdir('models/summary-unfrozen')
     for checkpoint in os.listdir(model_dir):
         print("Starting:", checkpoint)
         dic = torch.load(f'{model_dir}/{checkpoint}')
