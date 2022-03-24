@@ -1,8 +1,8 @@
 import torch
 from torch.cuda.amp import autocast
 import os
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.metrics.pairwise import cosine_similarity
 import gzip, json
 
 
