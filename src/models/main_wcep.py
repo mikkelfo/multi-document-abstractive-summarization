@@ -41,7 +41,7 @@ for epoch in range(EPOCHS):
     aggr_loss = 0
 
     for idx in range(N_CLUSTERS_TRAIN):
-        cluster = torch.load(f'data/processed/wcep/text/train/cluster_{idx}.pt')
+        cluster = torch.load(f'data/processed/wcep/text/train/cluster_{idx}.pt').to('cuda')
 
         input_ids = cluster.input_ids[:CLUSTER_SIZE, :TOKEN_LENGTH]
         attention_mask = cluster.attention_mask[:CLUSTER_SIZE, :TOKEN_LENGTH]
