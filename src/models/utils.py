@@ -60,7 +60,7 @@ def validate_da(model, TOKEN_LENGTH, BATCH_SIZE):
     return val_loss
 
 def validate_wcep(model, TOKEN_LENGTH, CLUSTER_SIZE):
-    val_targets = target_summaries('val')
+    val_targets = torch.load('data/validation_targets')
     N_CLUSTERS_VAL = len(os.listdir('data/processed/wcep/text/validation'))
     val_loss = 0
     model.eval()
