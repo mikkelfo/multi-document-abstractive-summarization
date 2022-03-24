@@ -24,8 +24,8 @@ class ProphetNetAutocast(torch.nn.Module):
 class ProphetNetMulti(torch.nn.Module):
     def __init__(self) -> None:
         super(ProphetNetMulti, self).__init__()
-        self.encoder = ProphetNetEncoder.from_pretrained('patrickvonplaten/prophetnet-large-uncased-standalone')
-        self.model = ProphetNetForCausalLM.from_pretrained('microsoft/prophetnet-large-uncased')
+        self.encoder = ProphetNetEncoder.from_pretrained('patrickvonplaten/prophetnet-large-uncased-standalone').to('cuda')
+        self.model = ProphetNetForCausalLM.from_pretrained('microsoft/prophetnet-large-uncased').to('cuda')
         assert self.model.config.is_decoder, f"{self.model.__class__} has to be configured as a decoder."
 
     def get_params(self):
@@ -55,6 +55,7 @@ class ProphetNetMulti(torch.nn.Module):
 
 if __name__ == '__main__':
     model = ProphetNetMulti()
+    model.to('cuda')
     model.train()
     input_ids = torch.randint(1, 3000, (5, 100))
     attention_mask = torch.ones(5, 100)
