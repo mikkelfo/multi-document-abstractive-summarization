@@ -8,7 +8,7 @@ from torch.cuda.amp import autocast
 
 ''' CONSTANTS '''
 EPOCHS = 10
-TOKEN_LENGTH = 275
+TOKEN_LENGTH = 250
 GRADIENT_ACCUMULATION_STEP = 32
 CHECKPOINTING_STEP = 1024
 TRAIN_LOG_STEP = 64
@@ -54,6 +54,7 @@ for epoch in range(EPOCHS):
         if (idx + 1) % GRADIENT_ACCUMULATION_STEP == 0:
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
+            torch.cuda.empty_cache()
 
         c_loss = loss.detach() / len(input_ids)
 
