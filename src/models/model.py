@@ -47,7 +47,7 @@ class ProphetNetMulti(torch.nn.Module):
     def forward(self, input_ids, attention_mask, target):
         last_hidden = self.encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         
-        logits = self.model(input_ids=target, encoder_hidden_states=last_hidden, use_cache=False).logits
+        logits = self.model(input_ids=target.unsqueeze(0), encoder_hidden_states=last_hidden, use_cache=False).logits
         lprobs = F.log_softmax(logits[0, :, :], dim=-1)
 
         loss = F.nll_loss(lprobs, target)
@@ -56,7 +56,6 @@ class ProphetNetMulti(torch.nn.Module):
 if __name__ == '__main__':
     model = ProphetNetMulti()
     model.train()
-    input_ids = torch.randint(1, 3000, (10, 100))
-    attention_mask = torch.ones(10, 100)
-    labels = torch.randint(1, 3000, (1, 100))
-    model(input_ids, attention_mask, labels)
+    input_ids = torch.randint(1, 3000, (5, 100))
+    attention_mask = torch.ones(5, 100)
+    model(input_ids=input_ids, attention_mask=attention_mask, target=input_ids[0])
