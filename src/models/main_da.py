@@ -7,17 +7,18 @@ from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
 EPOCHS = 10
-BATCH_SIZE = 16
+BATCH_SIZE = 4
 TOKEN_LENGTH = 275
 N_CHUNKS = len(os.listdir('data/processed/danewsroom/abstractive/summary/train'))
 N_CHUNKS_VALIDATION = len(os.listdir('data/processed/danewsroom/abstractive/text/validation'))
-GRADIENT_ACCUMULATION_STEP = 32
+GRADIENT_ACCUMULATION_STEP = 128
 CHECKPOINTING_STEP = 50
 TRAIN_LOG_STEP = 5
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(language='da', freeze_layers=False)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
+# optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
