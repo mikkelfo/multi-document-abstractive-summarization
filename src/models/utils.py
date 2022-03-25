@@ -66,7 +66,7 @@ def validate_wcep(model, TOKEN_LENGTH, CLUSTER_SIZE):
     model.eval()
     with torch.no_grad():
         for idx in range(N_CLUSTERS_VAL):
-            cluster = torch.load(f'data/processed/wcep/text/validation/cluster_{idx}.pt')
+            cluster = torch.load(f'data/processed/wcep/text/validation/cluster_{idx}.pt').to('cuda')
             input_ids = cluster.input_ids[:CLUSTER_SIZE, :TOKEN_LENGTH]
             attention_mask = cluster.attention_mask[:CLUSTER_SIZE, :TOKEN_LENGTH]
             target = input_ids[val_targets[idx]]
