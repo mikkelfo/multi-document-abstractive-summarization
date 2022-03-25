@@ -1,12 +1,21 @@
 import torch
 from transformers import ProphetNetForConditionalGeneration, ProphetNetEncoder, ProphetNetDecoder, ProphetNetForCausalLM
+from transformers import XLMProphetNetForConditionalGeneration
 from torch.cuda.amp import autocast
 import torch.nn.functional as F 
 
 class ProphetNetAutocast(torch.nn.Module):
-    def __init__(self, freeze_layers=True) -> None:
+    def __init__(self, language, freeze_layers=False) -> None:
         super(ProphetNetAutocast, self).__init__()
-        self.model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
+        if language == 'en':
+            print("Initializing to Prophetnet")
+            self.model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
+        elif language == 'da':
+            print("Initializing XProphetNet")
+            self.model = XLMProphetNetForConditionalGeneration.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
+        else:
+            print("Defaulting to original prophetnet model")
+            self.model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
         self.model = torch.nn.DataParallel(self.model)
         self.model.to('cuda')
 

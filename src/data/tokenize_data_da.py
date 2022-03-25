@@ -1,10 +1,10 @@
-from transformers import ProphetNetTokenizer
+from transformers import XLMProphetNetTokenizer
 import pandas as pd
 import torch
 
 
 def chunk_and_tokenize(type, chunk_size=1024):
-    tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
+    tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
     for name in ['train', 'test', 'validation']:
         df = pd.read_csv(f'data/processed/danewsroom/{type}/{name}.csv')
 
