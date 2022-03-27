@@ -37,11 +37,14 @@ def validate(model, TOKEN_LENGTH, BATCH_SIZE):
     model.eval()
     with torch.no_grad():
         for chunk_idx in range(len(os.listdir('data/processed/cnn-dm/text/validation'))):
+            N = 0
             for batch in process_chunk(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
                 input_ids, attention_mask, labels = batch
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
                 val_loss += loss.detach()
+                N += len(input_ids)
+            val_loss /= N
     model.train()
     return val_loss
 
@@ -51,11 +54,14 @@ def validate_da(model, TOKEN_LENGTH, BATCH_SIZE):
     model.eval()
     with torch.no_grad():
         for chunk_idx in range(len(os.listdir('data/processed/danewsroom/abstractive/text/validation'))):
+            N = 0
             for batch in process_chunk_da(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
                 input_ids, attention_mask, labels = batch
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
                 val_loss += loss.detach()
+                N += len(input_ids)
+            val_loss /= N
     model.train()
     return val_loss
 

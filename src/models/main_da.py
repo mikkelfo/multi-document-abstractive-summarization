@@ -7,11 +7,11 @@ from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
 EPOCHS = 10
-BATCH_SIZE = 4
-TOKEN_LENGTH = 250
+BATCH_SIZE = 2
+TOKEN_LENGTH = 275
 N_CHUNKS = len(os.listdir('data/processed/danewsroom/abstractive/summary/train'))
 N_CHUNKS_VALIDATION = len(os.listdir('data/processed/danewsroom/abstractive/text/validation'))
-GRADIENT_ACCUMULATION_STEP = 128
+GRADIENT_ACCUMULATION_STEP = 256
 CHECKPOINTING_STEP = 50
 TRAIN_LOG_STEP = 5
 
@@ -37,7 +37,7 @@ for epoch in range(EPOCHS):
     aggr_loss = 0
     for chunk_idx in range(N_CHUNKS):
         train_loss = 0
-
+        N = 0
         for batch_idx, batch in enumerate(process_chunk_da(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train')):
             input_ids, attention_mask, labels = batch
             with autocast():
@@ -50,8 +50,9 @@ for epoch in range(EPOCHS):
                 optimizer.zero_grad(set_to_none=True)
                 torch.cuda.empty_cache()
 
+            N += len(input_ids)
             train_loss += loss.detach()
-
+        train_loss /= N
         wandb.log({'Train loss': train_loss}, step=(epoch*N_CHUNKS)+chunk_idx)
         aggr_loss += train_loss
         epoch_loss += train_loss
