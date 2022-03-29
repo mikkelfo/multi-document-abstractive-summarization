@@ -7,11 +7,11 @@ from model import ProphetNetAutocast
 
 ''' CONSTANTS '''
 EPOCHS = 10
-BATCH_SIZE = 16
+BATCH_SIZE = 2
 TOKEN_LENGTH = 275
 N_CHUNKS = len(os.listdir('data/processed/cnn-dm-multi/summary/train'))
 N_CHUNKS_VALIDATION = len(os.listdir('data/processed/cnn-dm-multi/text/validation'))
-GRADIENT_ACCUMULATION_STEP = 32
+GRADIENT_ACCUMULATION_STEP = 256
 CHECKPOINTING_STEP = 50
 TRAIN_LOG_STEP = 5
 
