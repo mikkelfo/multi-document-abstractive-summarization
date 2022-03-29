@@ -12,7 +12,7 @@ TOKEN_LENGTH = 250
 GRADIENT_ACCUMULATION_STEP = 32
 CHECKPOINTING_STEP = 1024
 TRAIN_LOG_STEP = 64
-CLUSTER_SIZE = 16
+CLUSTER_SIZE = 8
 N_CLUSTERS_TRAIN = len(os.listdir('data/processed/wcep/text/train'))
 N_CLUSTERS_VAL = len(os.listdir('data/processed/wcep/text/validation'))
 
