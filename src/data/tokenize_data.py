@@ -1,6 +1,6 @@
 import json
 import torch
-from transformers import ProphetNetTokenizer
+from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 from utils import read_jsonl_gz
 
 def chunk_and_tokenize(chunk_size=1024):
@@ -18,6 +18,22 @@ def chunk_and_tokenize(chunk_size=1024):
 
             torch.save(tokenized_text, f'data/processed/cnn-dm/text/{name}/chunk_{i // chunk_size}.pt')
             torch.save(tokenized_summary, f'data/processed/cnn-dm/summary/{name}/chunk_{i // chunk_size}.pt')
+
+def chunk_and_tokenize_multi(chunk_size=1024):
+    tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
+    for name in ['train', 'test', 'validation']:
+        file = open(f'data/processed/cnn-dm_{name}.json', 'r')
+        data = json.load(file)
+
+        for i in range(0, len(data), chunk_size):
+            subset = data[i:(i+chunk_size)]
+            text, summary = zip(*subset)
+
+            tokenized_text = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+            tokenized_summary = tokenizer(summary, return_tensors="pt", padding=True, truncation=True)
+
+            torch.save(tokenized_text, f'data/processed/cnn-dm-multi/text/{name}/chunk_{i // chunk_size}.pt')
+            torch.save(tokenized_summary, f'data/processed/cnn-dm-multi/summary/{name}/chunk_{i // chunk_size}.pt')
 
 
 def chunk_and_tokenize_wcep():
@@ -37,4 +53,5 @@ def chunk_and_tokenize_wcep():
 
 
 if __name__ == '__main__':
-    chunk_and_tokenize()
+    # chunk_and_tokenize()
+    chunk_and_tokenize_multi
