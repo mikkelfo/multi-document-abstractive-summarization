@@ -54,4 +54,4 @@ def chunk_and_tokenize_wcep():
 
 if __name__ == '__main__':
     # chunk_and_tokenize()
-    chunk_and_tokenize_multi
+    chunk_and_tokenize_multi()
