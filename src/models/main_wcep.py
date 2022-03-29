@@ -34,7 +34,7 @@ wandb.watch(model)
 model.train()
 
 ''' PRODUCE TARGET SUMMARIES'''
-train_targets = torch.load('data/train_targets.pt')
+train_targets = torch.load('data/train_targets_8.pt')
 
 for epoch in range(EPOCHS):
     epoch_loss = 0
