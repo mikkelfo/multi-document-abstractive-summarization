@@ -17,7 +17,8 @@ TRAIN_LOG_STEP = 5
 
 ''' INITIALIZATION '''
 model = ProphetNetAutocast(language='da', freeze_layers=False)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
+# optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 
 # For model checkpointing
 if not os.path.isdir('checkpoints'):
