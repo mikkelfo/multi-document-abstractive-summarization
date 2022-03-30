@@ -41,7 +41,7 @@ for epoch in range(EPOCHS):
         for batch_idx, batch in enumerate(process_chunk_multi(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'train')):
             input_ids, attention_mask, target, target_mask = batch
             with autocast():
-                loss = model(input_ids=input_ids, attention_mask=attention_mask, decoder_input_ids=target, decoder_attention_mask=target_mask)
+                loss = model(input_ids=input_ids, attention_mask=attention_mask, labels=target, decoder_attention_mask=target_mask)
             loss.backward()
 
             # Gradient accumulation
