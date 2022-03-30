@@ -24,11 +24,11 @@ def process_chunk_multi(chunk_idx, token_length, batch_size, split):
     text = torch.load(f'data/processed/cnn-dm-multi/text/{split}/chunk_{chunk_idx}.pt')
 
     input_ids, attention_mask, = text['input_ids'][:, :token_length], text['attention_mask'][:, :token_length]
-    decoder_input_ids, _ = summary['input_ids'][:, :token_length], summary['attention_mask'][:, :token_length]
+    decoder_input_ids, decoder_attention_mask = summary['input_ids'][:, :token_length], summary['attention_mask'][:, :token_length]
 
     N = len(input_ids)  # 1024
     for i in range(0, N, batch_size):
-        batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)]
+        batch = input_ids[i:(i+batch_size)], attention_mask[i:(i+batch_size)], decoder_input_ids[i:(i+batch_size)], decoder_attention_mask[i:(i+batch_size)]
         yield batch
 
 
@@ -69,9 +69,9 @@ def validate_multi(model, TOKEN_LENGTH, BATCH_SIZE):
         for chunk_idx in range(len(os.listdir('data/processed/cnn-dm-multi/text/validation'))):
             N = 0
             for batch in process_chunk_multi(chunk_idx, TOKEN_LENGTH, BATCH_SIZE, 'validation'):
-                input_ids, attention_mask, labels = batch
+                input_ids, attention_mask, target, target_mask = batch
                 with autocast():
-                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                    loss = model(input_ids=input_ids, attention_mask=attention_mask, decoder_input_ids=target, decoder_attention_mask=target_mask)
                 val_loss += loss.detach()
                 N += len(input_ids)
             val_loss /= N
