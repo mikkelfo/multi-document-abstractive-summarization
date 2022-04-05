@@ -3,25 +3,25 @@ import torch
 from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 from utils import read_jsonl_gz, prepare_directory
 
-def chunk_and_tokenize_json(dir, chunk_size=512, xlm=False):
+def chunk_and_tokenize_json(dir, chunk_size=512, xlm=False, cased=True):
     prepare_directory(dir)
     if xlm:
         tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
     else:
         tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
     for name in ['train', 'test', 'validation']:
-        file = open(f'data/processed/cnn-dm/{name}.json', 'r')
+        file = open(f'data/processed/{dir.split("_")[0]}/{name}.json', 'r')
         data = json.load(file)
 
         for i in range(0, len(data), chunk_size):
             subset = data[i:(i+chunk_size)]
             text, summary = zip(*subset)
 
-            tokenized_text = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-            tokenized_summary = tokenizer(summary, return_tensors="pt", padding=True, truncation=True)
+            tokenized_text = tokenizer([t.lower() if not cased else t for t in text], return_tensors="pt", padding=True, truncation=True)
+            tokenized_summary = tokenizer([s.lower() if not cased else s for s in summary], return_tensors="pt", padding=True, truncation=True)
 
-            torch.save(tokenized_text, f'data/processed{dir}/text/{name}/chunk_{i // chunk_size}.pt')
-            torch.save(tokenized_summary, f'data/processed{dir}/summary/{name}/chunk_{i // chunk_size}.pt')
+            torch.save(tokenized_text, f'data/processed/{dir}/text/{name}/chunk_{i // chunk_size}.pt')
+            torch.save(tokenized_summary, f'data/processed/{dir}/summary/{name}/chunk_{i // chunk_size}.pt')
 
 
 def chunk_and_tokenize_wcep():
@@ -41,5 +41,6 @@ def chunk_and_tokenize_wcep():
 
 
 if __name__ == '__main__':
-    chunk_and_tokenize_json('cnn-dm')
+    chunk_and_tokenize_json('cnn-dm', cased=False)
+    chunk_and_tokenize_json('cnn-dm_cased')
     # chunk_and_tokenize_multi()
