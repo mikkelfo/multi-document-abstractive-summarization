@@ -32,12 +32,12 @@ def train(model, optimizer, args):
 
             # Checkpoint and validate
             if (chunk_idx + 1) % args.checkpointing == 0:
-                torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{chunk_idx+1}')
+                torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{chunk_idx+1}.pt')
                 validation_loss = validate(model, args)
                 wandb.log({'Validation loss': validation_loss}, step=log_step)
 
         # Save model end of epoch and validate
-        torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_end')
+        torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_end.pt')
         validation_loss = validate(model, args)
         wandb.log({'Validation loss': validation_loss}, step=log_step)
     
