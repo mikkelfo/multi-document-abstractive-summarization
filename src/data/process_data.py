@@ -128,5 +128,5 @@ def gz_to_csv(file="danewsroom.jsonl.gz"):
         
 
 if __name__ == '__main__':
-    process_cnndm()
+    # process_cnndm()
     split_cnndm()
