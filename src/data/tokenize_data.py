@@ -3,9 +3,9 @@ import torch
 from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 from utils import read_jsonl_gz, prepare_directory
 
-def chunk_and_tokenize_json(dir, chunk_size=512, xlm=False, cased=True):
+def chunk_and_tokenize_json(dir, chunk_size=512, cased=True):
     prepare_directory(dir)
-    if xlm:
+    if cased:
         tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
     else:
         tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
@@ -42,5 +42,5 @@ def chunk_and_tokenize_wcep():
 
 if __name__ == '__main__':
     chunk_and_tokenize_json('cnn-dm', cased=False)
-    chunk_and_tokenize_json('cnn-dm_cased')
+    chunk_and_tokenize_json('cnn-dm_cased', cased=True)
     # chunk_and_tokenize_multi()
