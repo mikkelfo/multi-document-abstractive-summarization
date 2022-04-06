@@ -7,6 +7,7 @@ from validate import validate
 
 
 def train(model, optimizer, args):
+    model.train()
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
         for chunk_idx in range(N_CHUNKS_TRAIN):
