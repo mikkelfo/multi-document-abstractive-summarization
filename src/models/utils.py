@@ -4,8 +4,8 @@ import gzip, json
 
 
 def process_chunk(split, chunk_idx, args):
-    summary = torch.load(f'data/processed/{args.dir}/summary/{split}/chunk_{chunk_idx}.pt')
-    text = torch.load(f'data/processed/{args.dir}/text/{split}/chunk_{chunk_idx}.pt')
+    summary = torch.load(f'data/processed/{args.dir}/summary/{split}/chunk_{chunk_idx}.pt').to('cuda')
+    text = torch.load(f'data/processed/{args.dir}/text/{split}/chunk_{chunk_idx}.pt').to('cuda')
 
     input_ids, attention_mask, = text['input_ids'][:, :args.token_length], text['attention_mask'][:, :args.token_length]
     decoder_input_ids, _ = summary['input_ids'][:, :args.token_length], summary['attention_mask'][:, :args.token_length]

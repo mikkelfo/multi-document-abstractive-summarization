@@ -17,7 +17,7 @@ def train(model, optimizer, args):
             for batch_idx, batch in enumerate(process_chunk('train', chunk_idx, args)):
                 input_ids, attention_mask, labels = batch
                 with autocast():
-                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels)
+                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels).loss.sum()
                 loss.backward()
                 chunk_loss += loss.detach()
 
