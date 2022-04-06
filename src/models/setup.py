@@ -31,7 +31,7 @@ def setup():
     if args.lang == 'da' and not args.xlm:
         raise Exception('Danish language is only suported with XLM enabled')
 
-    args.gradient_accumulation_step = 512 / args.batch_size
+    # args.gradient_accumulation_step = 512 / args.batch_size
     
     if args.xlm:
         print("Initializing XLM model")

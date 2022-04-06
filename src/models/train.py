@@ -14,18 +14,16 @@ def train(model, optimizer, args):
             log_step = (epoch*N_CHUNKS_TRAIN) + chunk_idx + 1   # +1 since we start counting from 1
             chunk_loss = 0
             
-            for batch_idx, batch in enumerate(process_chunk('train', chunk_idx, args)):
+            for batch in process_chunk('train', chunk_idx, args):
                 input_ids, attention_mask, labels = batch
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels, use_cache=False).loss.sum()
                 loss.backward()
                 chunk_loss += loss.detach()
 
-                # Every 512 samples we step
-                if (batch_idx + 1) % args.gradient_accumulation_step == 0:
-                    optimizer.step()
-                    optimizer.zero_grad(set_to_none=True)
-                    torch.cuda.empty_cache()
+            optimizer.step()
+            optimizer.zero_grad(set_to_none=True)
+            torch.cuda.empty_cache()
 
             # Report chunk loss per article
             chunk_size = get_chunk_size('train', chunk_idx, args)
