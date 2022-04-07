@@ -14,7 +14,7 @@ def validate(model, args):
             for batch in process_chunk('validation', chunk_idx, args):
                 input_ids, attention_mask, labels = batch
                 with autocast():
-                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels).loss
+                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels).loss.sum()
                 val_loss += loss.detach()
                 N += len(input_ids)
 
