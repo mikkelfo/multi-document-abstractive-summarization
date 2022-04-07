@@ -57,7 +57,7 @@ def setup():
     print("Directory:", args.dir)
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
-    wandb.watch(model)
+    # wandb.watch(model)    # Causes memory spikes (2GB on XLM)
     wandb.config.update(args)
 
     return model, optimizer, args
