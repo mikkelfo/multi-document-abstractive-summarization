@@ -12,7 +12,7 @@ def setup():
     parser.add_argument('--epochs', default=10, type=int, help="Number of epochs")
     parser.add_argument('--batch_size', default=1, type=int, help="Micro-batch size")
     parser.add_argument('--token_length', default=256, type=int, help="Number of tokens")
-    parser.add_argument('--checkpointing', default=50, type=int, help="How often the model is saved ")
+    parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved ")
     parser.add_argument('--dir', type=str, help="Change the directory")
 
     args = parser.parse_args()
