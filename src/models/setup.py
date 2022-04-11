@@ -27,7 +27,7 @@ def setup():
     if args.gpus > torch.cuda.device_count():
         raise Exception(f'Not enough GPUs available (args: {args.gpus}) > (available: {torch.cuda.device_count()})')
     if args.gpus > 1 and args.batch_size == 1:
-        raise Exception('Multiple GPUs in use with batch_size 1')
+        print('Multiple GPUs in use with batch_size 1')
     if args.lang == 'da' and not args.xlm:
         raise Exception('Danish language is only suported with XLM enabled')
 
