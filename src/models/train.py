@@ -26,8 +26,8 @@ def train(model, optimizer, args):
             torch.cuda.empty_cache()
 
             # Report chunk loss per article
-            chunk_size = get_chunk_size('train', chunk_idx, args)
-            wandb.log({'Train loss': chunk_loss / chunk_size}, step=log_step)
+            num_passes = get_chunk_size('train', chunk_idx, args) / args.batch_size
+            wandb.log({'Train loss': chunk_loss / num_passes}, step=log_step)
 
             # Checkpoint and validate
             if (chunk_idx + 1) % args.checkpointing == 0:
