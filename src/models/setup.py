@@ -41,13 +41,12 @@ def setup():
         model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
     model.gradient_checkpointing_enable()
 
-    if args.gpus > 1:
-        model = torch.nn.DataParallel(model)
-        print("DataParallel activated")
-    
     if args.gpus > 0:
         model.to('cuda')
         print("Running on GPU")
+        if args.gpus > 1:
+            model = torch.nn.DataParallel(model)
+            print("DataParallel activated")
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
