@@ -19,15 +19,15 @@ def train(model, optimizer, args):
                 with autocast():
                     loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels, use_cache=False).loss.sum()
                 loss.backward()
-                chunk_loss += loss.detach()
+                chunk_loss += loss.item()
 
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
             torch.cuda.empty_cache()
 
             # Report chunk loss per article
-            num_passes = get_chunk_size('train', chunk_idx, args) / args.batch_size
-            wandb.log({'Train loss': chunk_loss / num_passes}, step=log_step)
+            chunk_size = get_chunk_size('train', chunk_idx, args)
+            wandb.log({'Train loss': chunk_loss / (chunk_size / args.batch_size)}, step=log_step)
 
             # Checkpoint and validate
             if (chunk_idx + 1) % args.checkpointing == 0:
