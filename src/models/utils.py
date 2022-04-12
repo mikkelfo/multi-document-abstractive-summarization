@@ -8,11 +8,12 @@ def process_chunk(split, chunk_idx, args):
     text = torch.load(f'data/processed/{args.dir}/text/{split}/chunk_{chunk_idx}.pt')
 
     input_ids, attention_mask, = text['input_ids'][:, :args.token_length].to('cuda'), text['attention_mask'][:, :args.token_length].to('cuda')
-    decoder_input_ids, _ = summary['input_ids'][:, :args.token_length].to('cuda'), summary['attention_mask'][:, :args.token_length]
+    labels = summary['input_ids'][:, :args.token_length].to('cuda')
+    labels = labels.masked_fill_(labels == 0, -100)
 
     N = len(input_ids)  # 512
     for i in range(0, N, args.batch_size):
-        batch = input_ids[i:(i+args.batch_size)], attention_mask[i:(i+args.batch_size)], decoder_input_ids[i:(i+args.batch_size)]
+        batch = input_ids[i:(i+args.batch_size)], attention_mask[i:(i+args.batch_size)], labels[i:(i+args.batch_size)]
         yield batch
 
 
