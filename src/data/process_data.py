@@ -4,7 +4,6 @@ import pandas as pd
 import os
 import string
 from pathlib import Path
-import pickle
 import json
 import random
 import math
@@ -32,14 +31,14 @@ def process_cnndm():
                 continue
 
             data.append((story, highlight))
-    file = open('data/processed/cnn-dm.json', 'w')
-    json.dump(data, file, indent=4)
+    with open('data/processed/cnn-dm.json', 'w') as file:
+        json.dump(data, file, indent=4)
 
 
 def split_cnndm(ratios=[0.9, 0.05, 0.05]):
     assert sum(ratios) == 1
-    file = open('data/processed/cnn-dm.json', 'r')
-    data = json.load(file)
+    with open('data/processed/cnn-dm.json', 'r') as file:
+        data = json.load(file)
     N = len(data)
 
     train = math.ceil(N*ratios[0])

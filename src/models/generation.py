@@ -28,8 +28,8 @@ def generate_summaries(model_dir, data_dir='data/processed/cnn-dm/text/test'):
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
                 summaries += gen_summary
         
-        file = open(f'models/summary-unfrozen/{checkpoint}.json', 'w')
-        json.dump(summaries, file, indent=4)
+        with open(f'models/summary-unfrozen/{checkpoint}.json', 'w') as file:
+            json.dump(summaries, file, indent=4)
         print()
 
 def generate_original(data_dir='data/processed/cnn-dm/text/test'):
@@ -48,8 +48,8 @@ def generate_original(data_dir='data/processed/cnn-dm/text/test'):
             gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
             summaries += gen_summary
     
-    file = open(f'models/original_summary.json', 'w')
-    json.dump(summaries, file, indent=4)
+    with open(f'models/original_summary.json', 'w') as file:
+        json.dump(summaries, file, indent=4)
 
 
 # Removes part of the key
