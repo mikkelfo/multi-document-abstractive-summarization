@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import random
 import math
+from utils import read_jsonl_gz
 
 random.seed(10)
 
@@ -124,8 +125,24 @@ def gz_to_csv(file="danewsroom.jsonl.gz"):
     df = pd.DataFrame(data)
     new_name = file.split(".")[0]    # Take first part of filename (excluding .type)
     df.to_csv(f'data/raw/{new_name}.csv')
+
+
+'''
+    *****       WCEP        *****
+'''
+def process_wcep(dir, cluster_size):
+    for name in ['train', 'test', 'validation']:
+        data_generator = read_jsonl_gz(f'data/raw/{dir}/{name}.jsonl.gz')
+        data = []
+        for cluster in data_generator:
+            articles = cluster['articles']
+            text = [x['text'] for x in articles[:cluster_size]]
+            data.append((cluster['summary'], text))
+        with open(f'data/processed/{dir}/{name}.json', 'w') as file:
+            json.dump(data, file, indent=4)
         
 
 if __name__ == '__main__':
     # process_cnndm()
-    split_cnndm()
+    # split_cnndm()
+    process_wcep('wcep', 8)
