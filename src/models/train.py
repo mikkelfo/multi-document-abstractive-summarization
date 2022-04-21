@@ -1,6 +1,6 @@
 import os
 from torch.cuda.amp import autocast
-from utils import process_chunk, get_chunk_size
+from utils import process_chunk, custom_forward_mds
 import torch
 import wandb
 from validate import validate
@@ -13,11 +13,14 @@ def train(model, optimizer, args):
         for chunk_idx in range(N_CHUNKS_TRAIN):
             log_step = (epoch*N_CHUNKS_TRAIN) + chunk_idx + 1   # +1 since we start counting from 1
             chunk_loss = 0
-            
-            for batch in process_chunk('train', chunk_idx, args):
+
+            for batch_idx, batch in enumerate(process_chunk('train', chunk_idx, args)):
                 input_ids, attention_mask, labels = batch
                 with autocast():
-                    loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels, use_cache=False).loss.mean()
+                    if args.mds:
+                        loss = custom_forward_mds(model, input_ids, attention_mask, labels, args).loss.mean()
+                    else:
+                        loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels, use_cache=False).loss.mean()
                 loss.backward()
                 chunk_loss += loss.item()
 
@@ -26,8 +29,7 @@ def train(model, optimizer, args):
             torch.cuda.empty_cache()
 
             # Report chunk loss per article
-            chunk_size = get_chunk_size('train', chunk_idx, args)
-            wandb.log({'Train loss': chunk_loss / (chunk_size / args.batch_size)}, step=log_step)
+            wandb.log({'Train loss': chunk_loss / (batch_idx + 1)}, step=log_step)
 
             # Checkpoint and validate
             if (chunk_idx + 1) % args.checkpointing == 0:

@@ -4,16 +4,18 @@ import torch
 import wandb
 import os
 
+
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
-    parser.add_argument('lang', type=str)
+    parser.add_argument('dir', type=str)
     parser.add_argument('--xlm', const=True, default=False, nargs="?", help="Use XLMProphetNet (Default: ProphetNet)")
     parser.add_argument('--gpus', default=1, type=int, help="Number of GPUs to utilise")
     parser.add_argument('--epochs', default=10, type=int, help="Number of epochs")
     parser.add_argument('--batch_size', default=1, type=int, help="Micro-batch size")
     parser.add_argument('--token_length', default=256, type=int, help="Number of tokens")
     parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved ")
-    parser.add_argument('--dir', type=str, help="Change the directory")
+    parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
+    parser.add_argument('--method', type=str, help="Which MDS method to use")
 
     args = parser.parse_args()
 
@@ -22,16 +24,14 @@ def setup():
     assert args.token_length > 0 and args.token_length < 512
     assert args.checkpointing > 0
     assert args.gpus >= 0
-    assert args.lang == 'da' or args.lang == 'en', "Only supports 'da' or 'en'"
+    assert args.method is None or args.method == 'mean' or args.method == 'cat' or args.method == 'serial' or args.method == 'sds'
 
+    if args.mds and args.method is None:
+        raise Exception('--method required with --mds ')
     if args.gpus > torch.cuda.device_count():
         raise Exception(f'Not enough GPUs available (args: {args.gpus}) > (available: {torch.cuda.device_count()})')
     if args.gpus > 1 and args.batch_size == 1:
         print('Multiple GPUs in use with batch_size 1')
-    if args.lang == 'da' and not args.xlm:
-        raise Exception('Danish language is only suported with XLM enabled')
-
-    # args.gradient_accumulation_step = 512 / args.batch_size
     
     if args.xlm:
         print("Initializing XLM model")
@@ -50,15 +50,9 @@ def setup():
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
-    if args.dir is None:
-        if args.lang == 'da':
-            args.dir = 'danewsroom/abstractive'
-        elif args.lang == 'en':
-            args.dir = 'cnn-dm'
     print("Directory:", args.dir)
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
-    # wandb.watch(model)    # Causes memory spikes (2GB on XLM)
     wandb.config.update(args)
 
     return model, optimizer, args
