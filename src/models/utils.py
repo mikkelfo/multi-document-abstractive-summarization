@@ -127,7 +127,7 @@ def serial_forward(
             attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
                 hidden_states=hidden_states,
                 key_value_states=encoder_hidden_states[i:i+1],
-                attention_mask=encoder_attn_mask[i:i+1],
+                attention_mask=encoder_attn_mask[(i*16):(i+1)*16],
                 layer_head_mask=cross_attn_layer_head_mask,
                 past_key_value=cross_attn_past_key_value,
                 output_attentions=output_attentions,
