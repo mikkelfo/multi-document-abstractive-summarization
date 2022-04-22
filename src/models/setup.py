@@ -3,6 +3,7 @@ from transformers import XLMProphetNetForConditionalGeneration, ProphetNetForCon
 import torch
 import wandb
 import os
+from utils import implement_serial_input
 
 
 def setup():
@@ -24,7 +25,7 @@ def setup():
     assert args.token_length > 0 and args.token_length < 512
     assert args.checkpointing > 0
     assert args.gpus >= 0
-    assert args.method is None or args.method == 'mean' or args.method == 'cat' or args.method == 'serial' or args.method == 'sds'
+    assert args.method is None or args.method == 'mean' or args.method == 'serial' or args.method == 'sds'
 
     if args.mds and args.method is None:
         raise Exception('--method required with --mds ')
@@ -47,6 +48,9 @@ def setup():
         if args.gpus > 1:
             model = torch.nn.DataParallel(model)
             print("DataParallel activated")
+
+    if args.method == 'serial':
+        model = implement_serial_input(model)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 

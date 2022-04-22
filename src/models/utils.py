@@ -1,21 +1,19 @@
 import torch
 import os
 import gzip, json
+import types
 
 
 def custom_forward_mds(model, input_ids, attention_mask, labels, args):
     enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
 
-    if args.method == 'cat':
-        enc_output.last_hidden_state = enc_output.last_hidden_state[attention_mask.bool()].unsqueeze(0)
-    elif args.method == 'mean':
+    # No attention_mask if method is 'mean'
+    if args.method == 'mean':
         enc_output.last_hidden_state = enc_output.last_hidden_state.mean(1).unsqueeze(0)
-    elif args.method == 'serial':
-        raise Exception('Not implemented yet')
-    elif args.method == 'sds':
+        output = model(encoder_outputs=enc_output, labels=labels, use_cache=False)
+    # SDS and Serial uses attention_mask
+    else:
         output = model(encoder_outputs=enc_output, attention_mask=attention_mask, labels=labels, use_cache=False)
-        return output
-    output = model(encoder_outputs=enc_output, labels=labels, use_cache=False)
     return output
 
 
@@ -78,3 +76,78 @@ def concat_chunks(dir):
         attention_mask = torch.cat((attention_mask, chunk.attention_mask))
 
     return list(zip(input_ids, attention_mask))
+
+
+def implement_serial_input(model):
+    for layer in model.prophetnet.decoder.layers:
+        layer.forward = types.MethodType(serial_forward, layer)
+    return model
+
+
+# Copy pasted from https://github.com/huggingface/transformers/blob/v4.18.0/src/transformers/models/prophetnet/modeling_prophetnet.py#L1176
+# Added for loop during cross_attn
+def serial_forward(
+    self,
+    hidden_states,
+    attention_mask=None,
+    encoder_hidden_states=None,
+    encoder_attn_mask=None,
+    layer_head_mask=None,
+    cross_attn_layer_head_mask=None,
+    extended_predict_attention_mask=None,
+    main_relative_position_buckets=None,
+    predict_relative_position_buckets=None,
+    position_ids=None,
+    past_key_value=None,
+    use_cache: bool = True,
+    output_attentions: bool = False,
+):
+    # 1st residual block
+    # decoder uni-directional self-attention cached key/values tuple is at positions 1,2
+    self_attn_past_key_value = past_key_value[:2] if past_key_value is not None else None
+    ngram_attention_output, self_attn_weights, self_attn_weights_ngram, present_key_value = self.self_attn(
+        hidden_states=hidden_states,
+        past_key_value=self_attn_past_key_value,
+        attention_mask=attention_mask,
+        layer_head_mask=layer_head_mask,
+        extended_predict_attention_mask=extended_predict_attention_mask,
+        main_relative_position_buckets=main_relative_position_buckets,
+        predict_relative_position_buckets=predict_relative_position_buckets,
+        position_ids=position_ids,
+    )
+    hidden_states = self.self_attn_layer_norm(hidden_states + ngram_attention_output)
+
+    # cross_attn cached key/values tuple is at positions 3,4 of present_key_value tuple
+    cross_attn_past_key_value = past_key_value[-2:] if past_key_value is not None else None
+    cross_attn_weights = None
+    if encoder_hidden_states is not None:
+        # SERIAL INPUT
+        for i in range(len(encoder_hidden_states)):
+            # 2nd residual block
+            attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
+                hidden_states=hidden_states,
+                key_value_states=encoder_hidden_states[i],
+                attention_mask=encoder_attn_mask[i],
+                layer_head_mask=cross_attn_layer_head_mask,
+                past_key_value=cross_attn_past_key_value,
+                output_attentions=output_attentions,
+            )
+            hidden_states = self.cross_attn_layer_norm(attention_output + hidden_states)
+
+            # add cross-attn to positions 3,4 of present_key_value tuple
+            present_key_value = present_key_value + cross_attn_present_key_value
+
+    # 3rd residual block
+    feed_forward_output = self.feed_forward(hidden_states)
+    hidden_states = self.feed_forward_layer_norm(feed_forward_output + hidden_states)
+
+    outputs = (hidden_states,)
+
+    if output_attentions:
+        outputs += (self_attn_weights, self_attn_weights_ngram, cross_attn_weights)
+
+    if use_cache:
+        outputs += (present_key_value,)
+
+    return outputs
+
