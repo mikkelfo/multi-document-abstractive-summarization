@@ -34,10 +34,10 @@ def generate_summaries():
     os.mkdir(f'summaries/{args.checkpoints}')
     N_chunks = len(os.listdir(f'data/processed/{args.dir}/text/test'))
     for checkpoint in [None] + os.listdir(f'checkpoints/{args.checkpoints}'):
-        if 'end' not in checkpoint:
-            continue
         print("Starting:", checkpoint)
         if checkpoint is not None:
+            if 'end' not in checkpoint:
+                continue
             dic = torch.load(f'checkpoints/{args.checkpoints}/{checkpoint}')
             model.load_state_dict(dic)
 
