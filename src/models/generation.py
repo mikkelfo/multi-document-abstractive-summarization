@@ -41,11 +41,16 @@ def generate_summaries():
 
         summaries = []
         for chunk_idx in range(N_chunks):
+            chunk_summ = []
             for batch in process_chunk('test', chunk_idx, args):
                 input_ids, attention_mask, _ = batch
                 output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
-                summaries += gen_summary
+                if args.mds:
+                    chunk_summ.append(gen_summary)
+                else:
+                    chunk_summ += gen_summary
+            summaries.append(chunk_summ)
         with open(f'summaries/{args.checkpoints}/{checkpoint}.json', 'w') as file:
             json.dump(summaries, file, indent=4)
 
