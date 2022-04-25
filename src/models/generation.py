@@ -58,7 +58,7 @@ def generate_summaries():
                 else:
                     chunk_summ += gen_summary
             summaries.append(chunk_summ)
-        with open(f'summaries/{args.checkpoints}/{checkpoint.split(".")[0]}.json', 'w') as file:
+        with open(f'summaries/{args.checkpoints}/{checkpoint}.json', 'w') as file:
             json.dump(summaries, file, indent=4)
 
 
