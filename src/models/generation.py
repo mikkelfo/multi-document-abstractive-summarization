@@ -33,26 +33,32 @@ def generate_summaries():
     model, tokenizer, args = setup()
     os.mkdir(f'summaries/{args.checkpoints}')
     N_chunks = len(os.listdir(f'data/processed/{args.dir}/text/test'))
-    for checkpoint in os.listdir(f'checkpoints/{args.checkpoints}'):
+    for checkpoint in [None] + os.listdir(f'checkpoints/{args.checkpoints}'):
         if 'end' not in checkpoint:
             continue
         print("Starting:", checkpoint)
-        dic = torch.load(f'checkpoints/{args.checkpoints}/{checkpoint}')
-        model.load_state_dict(dic)
+        if checkpoint is not None:
+            dic = torch.load(f'checkpoints/{args.checkpoints}/{checkpoint}')
+            model.load_state_dict(dic)
 
         summaries = []
         for chunk_idx in range(N_chunks):
             chunk_summ = []
             for batch in process_chunk('test', chunk_idx, args):
                 input_ids, attention_mask, _ = batch
-                output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
+                if args.method == 'mean':
+                    enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
+                    enc_output.last_hidden_state = enc_output.last_hidden_state.mean(1).unsqueeze(0)
+                    output = model.generate(encoder_outputs=enc_output, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
+                else:
+                    output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
                 if args.mds:
                     chunk_summ.append(gen_summary)
                 else:
                     chunk_summ += gen_summary
             summaries.append(chunk_summ)
-        with open(f'summaries/{args.checkpoints}/{checkpoint}.json', 'w') as file:
+        with open(f'summaries/{args.checkpoints}/{checkpoint.split(".")[0]}.json', 'w') as file:
             json.dump(summaries, file, indent=4)
 
 
