@@ -36,7 +36,7 @@ def generate_summaries():
         if 'end' not in checkpoint:
             continue
         print("Starting:", checkpoint)
-        dic = torch.load(f'{args.checkpoints}/{checkpoint}')
+        dic = torch.load(f'checkpoints/{args.checkpoints}/{checkpoint}')
         model.load_state_dict(dic)
 
         summaries = []
