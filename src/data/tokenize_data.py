@@ -73,6 +73,10 @@ def chunk_and_tokenize_wcep(dir, cased):
                 N = 0
                 chunk_text = []
                 chunk_summary = []
+        # Save last chunk
+        if N != 0:
+            torch.save(chunk_text, f'data/processed/{dir}/text/{name}/chunk_{i}.pt')
+            torch.save(chunk_summary, f'data/processed/{dir}/summary/{name}/chunk_{i}.pt')
 
 
 if __name__ == '__main__':
