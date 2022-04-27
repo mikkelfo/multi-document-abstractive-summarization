@@ -17,6 +17,7 @@ def setup():
     parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved ")
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
+    parser.add_argument('--unsupervised', const=True, default=False, nargs="?", help="To use unsupervised approach (target summary)")
 
     args = parser.parse_args()
 
