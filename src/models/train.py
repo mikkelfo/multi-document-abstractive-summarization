@@ -22,6 +22,7 @@ def train(model, optimizer, args):
                     target_index = next(targets)
                     labels = input_ids[target_index].unsqueeze(0)                                   # Assign labels to the target summary
                     input_ids = torch.cat((input_ids[:target_index], input_ids[target_index+1:]))   # Remove target summary from input
+                    attention_mask = torch.cat((attention_mask[:target_index], attention_mask[target_index+1:]))   # Remove target summary from mask
                 with autocast():
                     if args.mds:
                         loss = custom_forward_mds(model, input_ids, attention_mask, labels, args).loss.mean()
