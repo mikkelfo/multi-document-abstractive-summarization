@@ -36,8 +36,6 @@ def generate_summaries():
     for checkpoint in [None] + os.listdir(f'checkpoints/{args.checkpoints}'):
         print("Starting:", checkpoint)
         if checkpoint is not None:
-            if 'end' not in checkpoint:
-                continue
             dic = torch.load(f'checkpoints/{args.checkpoints}/{checkpoint}')
             model.load_state_dict(dic)
 
