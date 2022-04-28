@@ -31,7 +31,8 @@ def setup():
 
 def generate_summaries():
     model, tokenizer, args = setup()
-    os.mkdir(f'summaries/{args.checkpoints}')
+    if not os.path.isdir(f'summaries/{args.checkpoints}'):
+        os.mkdir(f'summaries/{args.checkpoints}')
     N_chunks = len(os.listdir(f'data/processed/{args.dir}/text/test'))
     for checkpoint in [None] + os.listdir(f'checkpoints/{args.checkpoints}'):
         print("Starting:", checkpoint)
