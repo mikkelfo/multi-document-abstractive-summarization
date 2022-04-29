@@ -21,6 +21,7 @@ def train(model, optimizer, args):
                 if args.unsupervised:
                     target_index = next(targets)
                     labels = input_ids[target_index].unsqueeze(0)                                   # Assign labels to the target summary
+                    labels = labels.masked_select(labels != 0)                                      # Remove padding (Can be done because batch size is always 1)
                     input_ids = torch.cat((input_ids[:target_index], input_ids[target_index+1:]))   # Remove target summary from input
                     attention_mask = torch.cat((attention_mask[:target_index], attention_mask[target_index+1:]))   # Remove target summary from mask
                 with autocast():
