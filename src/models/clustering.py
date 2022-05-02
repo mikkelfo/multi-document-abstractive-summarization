@@ -11,7 +11,7 @@ def extract_cls(data_dir):
         with open(f'data/processed/{data_dir}/{name}.json', 'r') as file:
             data = json.load(file)
         text, _ = list(zip(*data))
-        cls_tokens = torch.tensor([])
+        cls_tokens = torch.tensor([]).to('cuda')
         with torch.no_grad():
             for i in range(len(text)):
                 inputs = tokenizer(text[i], return_tensors="pt").to('cuda')
