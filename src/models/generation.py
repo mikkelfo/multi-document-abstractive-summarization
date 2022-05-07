@@ -3,8 +3,9 @@ import torch
 from transformers import ProphetNetForConditionalGeneration, XLMProphetNetForConditionalGeneration
 from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 import json
-from utils import process_chunk, implement_serial_input
+from utils import process_chunk, implement_serial_input, prep_inputs_for_generation
 import argparse
+import types
 
 
 def setup():
@@ -30,6 +31,7 @@ def setup():
 
     if args.method == 'serial':
         model = implement_serial_input(model)
+        model._prepare_input_ids_for_generation = types.MethodType(prep_inputs_for_generation, model)
 
     return model, tokenizer, args
 
