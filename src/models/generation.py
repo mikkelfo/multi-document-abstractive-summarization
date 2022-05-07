@@ -3,8 +3,9 @@ import torch
 from transformers import ProphetNetForConditionalGeneration, XLMProphetNetForConditionalGeneration
 from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 import json
-from utils import process_chunk
+from utils import process_chunk, implement_serial_input
 import argparse
+
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
@@ -26,6 +27,9 @@ def setup():
         model = ProphetNetForConditionalGeneration.from_pretrained('microsoft/prophetnet-large-uncased')
 
     model.to('cuda')
+
+    if args.method == 'serial':
+        model = implement_serial_input(model)
 
     return model, tokenizer, args
 
@@ -49,6 +53,8 @@ def generate_summaries():
                     enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
                     enc_output.last_hidden_state = enc_output.last_hidden_state.mean(1).unsqueeze(0)
                     output = model.generate(encoder_outputs=enc_output, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
+                if args.method == 'serial':     # Temporary greedy search (num_beams=1)
+                    output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=1, no_repeat_ngram_size=3, length_penalty=1.2)
                 else:
                     output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
