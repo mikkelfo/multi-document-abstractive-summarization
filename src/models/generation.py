@@ -55,7 +55,7 @@ def generate_summaries():
                     output = model.generate(encoder_outputs=enc_output, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 if args.method == 'serial':     # Temporary greedy search (num_beams=1)
                     enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
-                    output = model.generate(encoder_outputs=enc_output, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=1, no_repeat_ngram_size=3, length_penalty=1.2)
+                    output = model.generate(encoder_outputs=enc_output, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 else:
                     output = model.generate(input_ids=input_ids, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
