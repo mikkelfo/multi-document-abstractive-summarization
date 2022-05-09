@@ -16,7 +16,7 @@ def setup():
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
     parser.add_argument('--batch_size', default=1, type=int, help="Micro-batch size")
-    parser.add_argument('--token_length', default=256, type=int, help="Number of tokens")
+    parser.add_argument('--token_length', default=512, type=int, help="Number of tokens")
 
     args = parser.parse_args()
 
