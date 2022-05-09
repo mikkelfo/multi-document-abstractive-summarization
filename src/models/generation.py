@@ -3,10 +3,9 @@ import torch
 from transformers import ProphetNetForConditionalGeneration, XLMProphetNetForConditionalGeneration
 from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 import json
-from utils import process_chunk, implement_serial_input, prep_inputs_for_generation
+from utils import process_chunk
 import argparse
-import types
-
+from generation_utils import setup_serial_generation
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
@@ -30,8 +29,7 @@ def setup():
     model.to('cuda')
 
     if args.method == 'serial':
-        model = implement_serial_input(model)
-        model._prepare_input_ids_for_generation = types.MethodType(prep_inputs_for_generation, model)
+        model = setup_serial_generation(model)
 
     return model, tokenizer, args
 

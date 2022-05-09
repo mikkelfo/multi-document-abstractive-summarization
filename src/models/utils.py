@@ -151,7 +151,3 @@ def serial_forward(
 
     return outputs
 
-def prep_inputs_for_generation(self, bos_token_id, encoder_outputs):
-    length = encoder_outputs.last_hidden_state.shape[1]
-    return torch.ones(1, length, dtype=torch.long, device=self.device) * -100
-
