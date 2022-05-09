@@ -53,7 +53,7 @@ def generate_summaries():
                     enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
                     enc_output.last_hidden_state = enc_output.last_hidden_state.mean(1).unsqueeze(0)
                     output = model.generate(encoder_outputs=enc_output, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
-                if args.method == 'serial':     # Temporary greedy search (num_beams=1)
+                if args.method == 'serial':
                     enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
                     output = model.generate(encoder_outputs=enc_output, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
                 else:
