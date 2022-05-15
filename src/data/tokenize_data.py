@@ -66,8 +66,8 @@ def chunk_and_tokenize_wcep(dir, cased, chunk_size=512):
                 chunk_text.append(tokenized_text)
                 chunk_summary.append(tokenized_summary)
 
-            torch.save(chunk_text, f'data/processed/{dir}/text/{name}/chunk_{i}.pt')
-            torch.save(chunk_summary, f'data/processed/{dir}/summary/{name}/chunk_{i}.pt')
+            torch.save(chunk_text, f'data/processed/{dir}/text/{name}/chunk_{i // chunk_size}.pt')
+            torch.save(chunk_summary, f'data/processed/{dir}/summary/{name}/chunk_{i // chunk_size}.pt')
 
 
 if __name__ == '__main__':
