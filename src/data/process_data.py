@@ -138,11 +138,12 @@ def process_wcep(dir, cluster_size):
             articles = cluster['articles']
             text = [x['text'] for x in articles[:cluster_size]]
             data.append((cluster['summary'], text))
-        with open(f'data/processed/{dir}/{name}.json', 'w') as file:
+        with open(f'data/processed/{dir}/{name}{cluster_size}.json', 'w') as file:
             json.dump(data, file, indent=4)
         
 
 if __name__ == '__main__':
     # process_cnndm()
     # split_cnndm()
-    process_wcep('wcep', 8)
+    # process_wcep('wcep', 8)
+    process_wcep('wcep', 100)
