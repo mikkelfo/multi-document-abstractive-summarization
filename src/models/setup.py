@@ -17,7 +17,7 @@ def setup():
     parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved ")
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
-    parser.add_argument('--unsupervised', const=True, default=False, nargs="?", help="To use unsupervised approach (target summary)")
+    parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
 
     args = parser.parse_args()
 
@@ -27,6 +27,7 @@ def setup():
     assert args.checkpointing > 0
     assert args.gpus >= 0
     assert args.method is None or args.method == 'mean' or args.method == 'serial' or args.method == 'sds'
+    assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle'
 
     if args.mds and args.method is None:
         raise Exception('--method required with --mds ')

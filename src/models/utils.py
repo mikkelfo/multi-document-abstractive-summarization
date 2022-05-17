@@ -30,6 +30,13 @@ def process_chunk(split, chunk_idx, args):
             labels = labels.masked_fill_(labels == 0, -100)
             if args.method == 'sds':
                 labels = labels.expand(len(input_ids), -1)
+            elif args.serial_strat == 'shuffle':
+                shuffle = torch.randperm(input_ids.shape[0])
+                input_ids = input_ids[shuffle]
+                attention_mask = attention_mask[shuffle]
+            elif args.serial_strat == 'prior':
+                input_ids = input_ids.flip(0)
+                attention_mask = attention_mask.flip(0)
             yield input_ids, attention_mask, labels
 
     else:
