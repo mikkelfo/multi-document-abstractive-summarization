@@ -10,8 +10,6 @@ def train(model, optimizer, args):
     model.train()
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
-        if args.unsupervised:
-            targets = iter(torch.load('data/processed/wcep/wcep_train_targets.pt'))
         for chunk_idx in range(N_CHUNKS_TRAIN):
             log_step = (epoch*N_CHUNKS_TRAIN) + chunk_idx + 1   # +1 since we start counting from 1
             chunk_loss = 0

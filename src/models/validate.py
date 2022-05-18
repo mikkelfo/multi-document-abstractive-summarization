@@ -7,8 +7,6 @@ from torch.cuda.amp import autocast
 def validate(model, args):
     val_loss = 0
     N_CHUNKS_VALIDATION = len(os.listdir(f'data/processed/{args.dir}/text/validation'))
-    if args.unsupervised:
-        targets = iter(torch.load('data/processed/wcep/wcep_validation_targets.pt'))
     model.eval()
     with torch.no_grad():
         for chunk_idx in range(N_CHUNKS_VALIDATION):
