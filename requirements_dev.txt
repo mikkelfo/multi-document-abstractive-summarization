@@ -1,4 +1,1 @@
-pandas
-pyrouge
-rouge
-matplotlib
+py-rouge
