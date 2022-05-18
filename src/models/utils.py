@@ -34,7 +34,7 @@ def process_chunk(split, chunk_idx, args):
                 shuffle = torch.randperm(input_ids.shape[0])
                 input_ids = input_ids[shuffle]
                 attention_mask = attention_mask[shuffle]
-            elif args.serial_strat == 'prior':
+            elif args.serial_strat == 'prio':
                 input_ids = input_ids.flip(0)
                 attention_mask = attention_mask.flip(0)
             yield input_ids, attention_mask, labels
