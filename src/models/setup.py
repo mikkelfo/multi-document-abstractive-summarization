@@ -27,7 +27,7 @@ def setup():
     assert args.checkpointing > 0
     assert args.gpus >= 0
     assert args.method is None or args.method == 'mean' or args.method == 'serial' or args.method == 'sds'
-    assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle'
+    assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle' or args.serial_strat == None
 
     if args.mds and args.method is None:
         raise Exception('--method required with --mds ')

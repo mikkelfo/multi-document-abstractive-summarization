@@ -19,7 +19,7 @@ def setup():
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
 
     args = parser.parse_args()
-    assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle'
+    assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle' or args.serial_strat == None
 
     if args.xlm:
         tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
