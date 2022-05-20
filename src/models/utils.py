@@ -32,11 +32,11 @@ def process_chunk(split, chunk_idx, args):
                 labels = labels.expand(len(input_ids), -1)
             elif args.serial_strat == 'shuffle':
                 shuffle = torch.randperm(input_ids.shape[0])
-                input_ids = input_ids[shuffle]
-                attention_mask = attention_mask[shuffle]
+                input_ids = input_ids[shuffle].clone().detach()
+                attention_mask = attention_mask[shuffle].clone().detach()
             elif args.serial_strat == 'prio':
-                input_ids = input_ids.flip(0)
-                attention_mask = attention_mask.flip(0)
+                input_ids = input_ids.flip(0).clone().detach()
+                attention_mask = attention_mask.flip(0).clone().detach()
             yield input_ids, attention_mask, labels
 
     else:
