@@ -4,14 +4,17 @@ from utils import process_chunk, custom_forward_mds
 import torch
 import wandb
 from validate import validate
+import random
 
 
 def train(model, optimizer, args):
     model.train()
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
-        for chunk_idx in range(N_CHUNKS_TRAIN):
-            log_step = (epoch*N_CHUNKS_TRAIN) + chunk_idx + 1   # +1 since we start counting from 1
+        chunk_indices = list(range(N_CHUNKS_TRAIN))
+        random.shuffle(chunk_indices)
+        for i, chunk_idx in enumerate(chunk_indices):
+            log_step = (epoch*N_CHUNKS_TRAIN) + i + 1   # +1 since we start counting from 1
             chunk_loss = 0
 
             for batch_idx, batch in enumerate(process_chunk('train', chunk_idx, args)):
@@ -33,7 +36,7 @@ def train(model, optimizer, args):
 
             # Checkpoint and validate
             if (chunk_idx + 1) % args.checkpointing == 0:
-                torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{chunk_idx+1}.pt')
+                torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{log_step}.pt')
                 validation_loss = validate(model, args)
                 wandb.log({'Validation loss': validation_loss}, step=log_step)
 
