@@ -5,7 +5,7 @@ def lowercase(array):
     return [el.text.lower() for el in array]
 
 def NER_overlap(pipeline):
-    with open('summaries/best/wcep-mean', 'r') as f:
+    with open('summaries/best/wcep-mean.json', 'r') as f:
         hypothesis = json.load(f)
     hypothesis = sum(sum(hypothesis, []), [])
     with open('summaries/best/wcep-serial.json', 'r') as f:
