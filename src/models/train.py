@@ -8,7 +8,7 @@ import random
 from generation import single_generation
 
 
-def train(model, optimizer, args):
+def train(model, optimizer, scheduler, args):
     model.train()
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
@@ -30,6 +30,7 @@ def train(model, optimizer, args):
                 chunk_loss += loss.item()
 
             optimizer.step()
+            scheduler.step()
             optimizer.zero_grad(set_to_none=True)
             torch.cuda.empty_cache()
 

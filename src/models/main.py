@@ -2,11 +2,11 @@ from setup import setup, setup_checkpointing, setup_summaries
 from train import train
 
 def main():
-    model, optimizer, args = setup()
+    model, optimizer, scheduler, args = setup()
     setup_checkpointing()
     setup_summaries()
 
-    train(model, optimizer, args)
+    train(model, optimizer, scheduler, args)
 
 if __name__ == '__main__':
     main()

@@ -6,6 +6,7 @@ import os
 from utils import implement_serial_input
 from prophetnet_fixes import prophetnet_fixes
 from generation_utils import setup_serial_generation
+from scheduler import InverseSqrtScheduler
 
 
 def setup():
@@ -63,6 +64,7 @@ def setup():
         model = prophetnet_fixes(model)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
+    scheduler = InverseSqrtScheduler(optimizer)
 
     print("Directory:", args.dir)
 
@@ -71,7 +73,7 @@ def setup():
     if args.watch:
         wandb.watch(model)
 
-    return model, optimizer, args
+    return model, optimizer, scheduler, args
     
 
 def setup_checkpointing():
