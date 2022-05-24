@@ -35,7 +35,7 @@ def train(model, optimizer, args):
             wandb.log({'Train loss': chunk_loss / (batch_idx + 1)}, step=log_step)
 
             # Checkpoint and validate
-            if (chunk_idx + 1) % args.checkpointing == 0:
+            if (i + 1) % args.checkpointing == 0:
                 torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{log_step}.pt')
                 validation_loss = validate(model, args)
                 wandb.log({'Validation loss': validation_loss}, step=log_step)
