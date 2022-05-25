@@ -1,5 +1,5 @@
 import os
-from torch.cuda.amp import autocast
+from torch.cuda.amp import autocast, GradScaler
 from utils import process_chunk, custom_forward_mds
 import torch
 import wandb
@@ -10,6 +10,7 @@ from generation import single_generation
 
 def train(model, optimizer, scheduler, args):
     model.train()
+    scaler = GradScaler()
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
         chunk_indices = list(range(N_CHUNKS_TRAIN))
@@ -26,12 +27,16 @@ def train(model, optimizer, scheduler, args):
                         loss = custom_forward_mds(model, input_ids, attention_mask, labels, args).loss.mean()
                     else:
                         loss = model(input_ids=input_ids, attention_mask = attention_mask, labels = labels, use_cache=False).loss.mean()
-                loss.backward()
+                scaler.scale(loss).backward()
+                # loss.backward()
                 chunk_loss += loss.item()
 
-            optimizer.step()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
+            scaler.step()
+            # optimizer.step()
             scheduler.step()
-            optimizer.zero_grad(set_to_none=True)
+            # optimizer.zero_grad(set_to_none=True)
             torch.cuda.empty_cache()
 
             # Report chunk loss per article
