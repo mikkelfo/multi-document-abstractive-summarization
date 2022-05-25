@@ -33,7 +33,8 @@ def train(model, optimizer, scheduler, args):
 
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
-            scaler.step()
+            scaler.step(optimizer)
+            scaler.update()
             # optimizer.step()
             scheduler.step()
             # optimizer.zero_grad(set_to_none=True)
