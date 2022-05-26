@@ -1,5 +1,6 @@
 import json
 import spacy
+import pandas as pd
 
 def lowercase(array):
     return [el.text.lower() for el in array]
@@ -17,12 +18,16 @@ def get_summaries(*summaries):
     return extracted
 
 def get_original(file):
-    with open(f'data/processed/{file}/test.json', 'r') as f:
-        data = json.load(f)
-    if file == 'wcep':
-        summary, text = zip(*data)
-    elif file == 'cnn-dm':
-        text, summary = zip(*data)
+    if 'danewsroom' in file:
+        data = pd.read_csv(f'data/processed/{file}/test.csv')
+        text, summary = data['text'].to_list(), data['summary'].to_list()
+    else:
+        with open(f'data/processed/{file}/test.json', 'r') as f:
+            data = json.load(f)
+        if file == 'wcep':
+            summary, text = zip(*data)
+        elif file == 'cnn-dm':
+            text, summary = zip(*data)
     return text, summary
 
 def NER_overlap(pipeline, text, reference, summaries):
@@ -62,3 +67,7 @@ if __name__ == '__main__':
     hypotheses = get_summaries('wcep-mean', 'wcep-serial')
     text, reference = get_original('wcep')
     NER_overlap('en_core_web_trf', text, reference, hypotheses)
+
+    hypotheses = get_summaries('da-xlm', 'da-xlm-512')
+    text, reference = get_original('danewsroom/abstractive')
+    NER_overlap('da_core_news_trf', text, reference, hypotheses)
