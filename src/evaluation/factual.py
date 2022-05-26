@@ -59,6 +59,11 @@ def NER_overlap(pipeline, text, reference, summaries):
 
 
 if __name__ == '__main__':
+    hypotheses = get_summaries('da-xlm', 'da-xlm-512')
+    text, reference = get_original('danewsroom/abstractive')
+    NER_overlap('da_core_news_trf', text, reference, hypotheses)
+    print()
+
     hypotheses = get_summaries('cnn-dm', 'cnn-dm-xlm')
     text, reference = get_original('cnn-dm')
     NER_overlap('en_core_web_trf', text, reference, hypotheses)
@@ -67,7 +72,3 @@ if __name__ == '__main__':
     hypotheses = get_summaries('wcep-mean', 'wcep-serial')
     text, reference = get_original('wcep')
     NER_overlap('en_core_web_trf', text, reference, hypotheses)
-
-    hypotheses = get_summaries('da-xlm', 'da-xlm-512')
-    text, reference = get_original('danewsroom/abstractive')
-    NER_overlap('da_core_news_trf', text, reference, hypotheses)
