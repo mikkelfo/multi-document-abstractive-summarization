@@ -20,6 +20,8 @@ def prophetnet_fixes(model):
     model.prophetnet.decoder.prepare_predict_attention_mask = types.MethodType(custom_prepare_predict_attention_mask, model.prophetnet.decoder)
     model.prophetnet.decoder.prepare_attention_mask = types.MethodType(custom_prepare_attention_mask, model.prophetnet.decoder)
 
+    return model
+
 def attn_forward(
     self,
     hidden_states,
