@@ -4,6 +4,7 @@ import torch
 import wandb
 import os
 from utils import implement_serial_input
+from prophetnet_fixes import prophetnet_fixes
 
 
 def setup():
@@ -53,6 +54,8 @@ def setup():
 
     if args.method == 'serial':
         model = implement_serial_input(model)
+    
+    model = prophetnet_fixes(model)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
