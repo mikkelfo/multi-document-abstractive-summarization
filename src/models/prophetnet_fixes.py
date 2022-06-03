@@ -14,6 +14,7 @@ def prophetnet_fixes(model):
     # Decoder
     for layer in model.prophetnet.decoder.layers:
         layer.self_attn.forward = types.MethodType(ngram_attn_forward, layer.self_attn)
+        layer.cross_attn.forward = types.MethodType(attn_forward, layer.cross_attn)
         layer.self_attn.get_predict_relative_pos_embeddings = types.MethodType(custom_get_predict_relative_pos_embeddings, layer.self_attn)
         layer.self_attn.get_main_relative_pos_embeddings = types.MethodType(custom_get_main_relative_pos_embeddings, layer.self_attn)
     model.prophetnet.decoder.forward = types.MethodType(decoder_forward, model.prophetnet.decoder)
