@@ -12,12 +12,8 @@ def train(model, optimizer, scheduler, args):
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
         chunk_indices = list(range(N_CHUNKS_TRAIN))
-<<<<<<< HEAD
         if args.shuffle:
             random.shuffle(chunk_indices)
-=======
-        random.shuffle(chunk_indices)
->>>>>>> Removed autocast and added shuffle
         for i, chunk_idx in enumerate(chunk_indices):
             log_step = (epoch*N_CHUNKS_TRAIN) + i + 1   # +1 since we start counting from 1
             chunk_loss = 0
@@ -31,7 +27,7 @@ def train(model, optimizer, scheduler, args):
                 loss.backward()
                 chunk_loss += loss.item()
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad(set_to_none=True)

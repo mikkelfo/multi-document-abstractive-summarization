@@ -11,6 +11,8 @@ from scheduler import InverseSqrtScheduler
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
+
+    # General
     parser.add_argument('dir', type=str)
     parser.add_argument('--xlm', const=True, default=False, nargs="?", help="Use XLMProphetNet (Default: ProphetNet)")
     parser.add_argument('--gpus', default=1, type=int, help="Number of GPUs to utilise")
@@ -21,9 +23,17 @@ def setup():
     parser.add_argument('--shuffle', const=True, default=False, nargs="?", help="Shuffle chunks during training")
     parser.add_argument('--watch', const=True, default=False, nargs="?", help="Activate wandb.watch")
     parser.add_argument('--fix', const=True, default=False, nargs="?", help="Activate fix for batch issues")
+
+    # Multi-document strategies
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
+
+    # Scheduler
+    parser.add_argument('--clip_norm', default=1, type=int, help="Gradient clip norm value")
+    parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
+    parser.add_argument('--warmup_init_lr', default=1e-07, type=int, help="Scheduler init lr")
+    parser.add_argument('--warmup_end_lr', default=1e-4, type=int, help="Scheduler end lr")
 
     args = parser.parse_args()
 
@@ -34,6 +44,10 @@ def setup():
     assert args.gpus >= 0
     assert args.method is None or args.method == 'mean' or args.method == 'serial' or args.method == 'sds'
     assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle' or args.serial_strat == None
+    assert args.clip_norm > 0
+    assert args.warmup_updates >= 0
+    assert args.warmup_init_lr > 0
+    assert args.warmup_init_lr > 0
 
     if args.mds and args.method is None:
         raise Exception('--method required with --mds ')
@@ -63,8 +77,8 @@ def setup():
     if args.fix:
         model = prophetnet_fixes(model)
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
-    scheduler = InverseSqrtScheduler(optimizer)
+    optimizer = torch.optim.Adam(model.parameters(), weight_decay=0.01)
+    scheduler = InverseSqrtScheduler(optimizer, warmup_updates=args.warmup_updates, warmup_init_lr=args.warmup_init_lr, warmup_end_lr=args.warmup_end_lr)
 
     print("Directory:", args.dir)
 
