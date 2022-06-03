@@ -30,10 +30,10 @@ def setup():
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
 
     # Scheduler
-    parser.add_argument('--clip_norm', default=1, type=int, help="Gradient clip norm value")
+    parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip norm value")
     parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
-    parser.add_argument('--warmup_init_lr', default=1e-07, type=int, help="Scheduler init lr")
-    parser.add_argument('--warmup_end_lr', default=1e-4, type=int, help="Scheduler end lr")
+    parser.add_argument('--warmup_init_lr', default=1e-07, type=float, help="Scheduler init lr")
+    parser.add_argument('--warmup_end_lr', default=1e-4, type=float, help="Scheduler end lr")
 
     args = parser.parse_args()
 
