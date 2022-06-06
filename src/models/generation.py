@@ -6,6 +6,7 @@ import json
 from utils import process_chunk
 import argparse
 from generation_utils import setup_serial_generation
+from prophetnet_fixes import prophetnet_fixes
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
