@@ -2,6 +2,7 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 from typing import Optional, Tuple, Union
+import math
 
 import types
 
@@ -535,9 +536,9 @@ def ngram_attn_forward(
     # saved states are stored with shape (batch_size, num_attn_heads, seq_len, head_dim)
     if past_key_value is not None:
         prev_main_key_states = past_key_value[0].view(batch_size, self.num_attn_heads, -1, self.head_dim)
-        main_key_states = torch.cat((prev_main_key_states, main_key_states), dim=1)
+        main_key_states = torch.cat((prev_main_key_states, main_key_states), dim=2)
         prev_main_value_states = past_key_value[1].view(batch_size, self.num_attn_heads, -1, self.head_dim)
-        main_value_states = torch.cat((prev_main_value_states, main_value_states), dim=1)
+        main_value_states = torch.cat((prev_main_value_states, main_value_states), dim=2)
 
     # Update cache
     past_key_value = (
@@ -672,6 +673,32 @@ def ngram_attn_forward(
     attn_output = nn.functional.dropout(attn_output, p=self.dropout, training=self.training)
 
     return attn_output, main_attn_probs, predict_attn_probs, past_key_value
+
+def compute_relative_buckets(num_buckets, max_distance, relative_positions, is_bidirectional=False):
+    """
+    This function computes individual parts of the relative position buckets. For more detail, see paper.
+    """
+    inv_relative_positions = -relative_positions
+    rel_positions_bucket = 0
+
+    if is_bidirectional:
+        num_buckets = num_buckets // 2
+        rel_positions_bucket = (
+            rel_positions_bucket
+            + torch.lt(inv_relative_positions, torch.zeros_like(inv_relative_positions)).int() * num_buckets
+        )
+        inv_relative_positions = torch.abs(inv_relative_positions)
+    else:
+        inv_relative_positions = torch.max(inv_relative_positions, torch.zeros_like(inv_relative_positions))
+
+    max_exact = num_buckets // 2
+    is_small = torch.lt(inv_relative_positions, max_exact)
+    val_if_large = max_exact + torch.log(inv_relative_positions.float() / max_exact) / math.log(
+        max_distance / max_exact
+    ) * (num_buckets - max_exact)
+    val_if_large = torch.min(val_if_large, torch.ones_like(val_if_large) * (num_buckets - 1)).int()
+    rel_positions_bucket = rel_positions_bucket + torch.where(is_small, inv_relative_positions.int(), val_if_large)
+    return rel_positions_bucket
 
 
 def custom_get_main_relative_pos_embeddings(
@@ -841,24 +868,7 @@ if __name__ == '__main__':
     inputs_inv = tokenizer(input_string[::-1], return_tensors="pt", padding=True, truncation=True)
     targets_inv = tokenizer(labels[::-1], return_tensors="pt", padding=True, truncation=True)
 
-    import types
-    from prophetnet_fixes import attn_forward, encoder_forward
-    for layer in model.prophetnet.encoder.layers:
-        layer.self_attn.forward = types.MethodType(attn_forward, layer.self_attn)
-
-    model.prophetnet.encoder.forward = types.MethodType(encoder_forward, model.prophetnet.encoder)
-
-    import types
-    from prophetnet_fixes import decoder_forward, ngram_attn_forward, custom_get_main_relative_pos_embeddings, custom_get_predict_relative_pos_embeddings, custom_prepare_predict_attention_mask, custom_prepare_attention_mask
-
-    for layer in model.prophetnet.decoder.layers:
-        layer.self_attn.forward = types.MethodType(ngram_attn_forward, layer.self_attn)
-        layer.self_attn.get_predict_relative_pos_embeddings = types.MethodType(custom_get_predict_relative_pos_embeddings, layer.self_attn)
-        layer.self_attn.get_main_relative_pos_embeddings = types.MethodType(custom_get_main_relative_pos_embeddings, layer.self_attn)
-
-    model.prophetnet.decoder.forward = types.MethodType(decoder_forward, model.prophetnet.decoder)
-    model.prophetnet.decoder.prepare_predict_attention_mask = types.MethodType(custom_prepare_predict_attention_mask, model.prophetnet.decoder)
-    model.prophetnet.decoder.prepare_attention_mask = types.MethodType(custom_prepare_attention_mask, model.prophetnet.decoder)
+    model = prophetnet_fixes(model)
 
     output = model(input_ids=inputs.input_ids, attention_mask=inputs.attention_mask, labels=targets.input_ids)
     output_inv = model(input_ids=inputs_inv.input_ids, attention_mask=inputs_inv.attention_mask, labels=targets_inv.input_ids)
