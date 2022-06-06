@@ -33,6 +33,8 @@ def setup():
     if args.method == 'serial':
         model = setup_serial_generation(model)
 
+    model = prophetnet_fixes(model)
+
     return model, tokenizer, args
 
 def generate_summaries():
