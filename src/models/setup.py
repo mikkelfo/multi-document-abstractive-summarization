@@ -19,6 +19,7 @@ def setup():
     parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved")
     parser.add_argument('--shuffle', const=True, default=False, nargs="?", help="Shuffle chunks during training")
     parser.add_argument('--watch', const=True, default=False, nargs="?", help="Activate wandb.watch")
+    parser.add_argument('--fix', const=True, default=False, nargs="?", help="Activate fix for batch issues")
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
@@ -58,7 +59,8 @@ def setup():
     if args.method == 'serial':
         model = implement_serial_input(model)
     
-    model = prophetnet_fixes(model)
+    if args.fix:
+        model = prophetnet_fixes(model)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0.01)
 
