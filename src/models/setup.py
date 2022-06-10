@@ -54,6 +54,7 @@ def setup():
 
     if args.method == 'serial':
         model = implement_serial_input(model)
+        model = setup_serial_generation(model)
     
     model = prophetnet_fixes(model)
     

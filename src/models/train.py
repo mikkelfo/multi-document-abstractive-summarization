@@ -5,6 +5,7 @@ import torch
 import wandb
 from validate import validate
 import random
+from generation import single_generation
 
 
 def train(model, optimizer, args):
@@ -39,9 +40,11 @@ def train(model, optimizer, args):
                 torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{log_step}.pt')
                 validation_loss = validate(model, args)
                 wandb.log({'Validation loss': validation_loss}, step=log_step)
+                single_generation(model, args, log_step)
 
         # Save model end of epoch and validate
         torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_end.pt')
         validation_loss = validate(model, args)
         wandb.log({'Validation loss': validation_loss}, step=log_step)
+        single_generation(model, args, log_step)
     

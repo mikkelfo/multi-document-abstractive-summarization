@@ -7,6 +7,7 @@ from utils import process_chunk
 import argparse
 from generation_utils import setup_serial_generation
 from prophetnet_fixes import prophetnet_fixes
+import wandb
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
@@ -38,8 +39,8 @@ def setup():
 
     return model, tokenizer, args
 
-def generate_summaries():
-    model, tokenizer, args = setup()
+
+def generate_summaries(model, tokenizer, args):
     if not os.path.isdir(f'summaries/{args.checkpoints}'):
         os.mkdir(f'summaries/{args.checkpoints}')
     N_chunks = len(os.listdir(f'data/processed/{args.dir}/text/test'))
@@ -73,5 +74,45 @@ def generate_summaries():
             json.dump(summaries, file, indent=4)
 
 
+def single_generation(model, args, log_step):
+    model.eval()
+    if args.xlm:
+        tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
+    else:
+        tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
+
+    summaries = []
+    for chunk_idx in range(N_chunks):
+        for batch in process_chunk('test', chunk_idx, args):
+            input_ids, attention_mask, _ = batch
+            enc_output = model.prophetnet.encoder(input_ids=input_ids, attention_mask=attention_mask)
+            if args.method == 'mean':
+                enc_output.last_hidden_state = enc_output.last_hidden_state.mean(1).unsqueeze(0)
+                attention_mask = None
+            output = model.generate(encoder_outputs=enc_output, attention_mask=attention_mask, min_length=45, max_length=110, num_beams=5, no_repeat_ngram_size=3, length_penalty=1.2)
+            gen_summary = tokenizer.batch_decode(output, skip_special_tokens=True)
+            summaries += gen_summary
+
+    summaries = ['\n'.join(sent_tokenize(summ)) for summ in summaries]
+    with open(f'summaries/{wandb.run.name}/{step}.json', 'w') as file:
+        json.dump(summaries, file, indent=4)
+
+    with open(f'data/processed/references/{args.dir.split("/")[0]}.json', 'r') as f:
+        references = json.load(f)
+
+    evaluator = rouge.Rouge(metrics=['rouge-n', 'rouge-l'], max_n=2, apply_avg=True, alpha=0.5,
+                            stemming=True if 'danewsroom' not in args.dir else False)
+
+    scores = evaluator.get_scores(summaries, reference)
+    r1 = s['rouge-1']['f']
+    r2 = s['rouge-2']['f']
+    rl = s['rouge-l']['f']
+    wandb.log({'R-1': r1}, step=log_step)
+    wandb.log({'R-2': r2}, step=log_step)
+    wandb.log({'R-L': r3}, step=log_step)
+    
+    model.train()
+
 if __name__ == '__main__':
-    generate_summaries()
+    model, tokenizer, args = setup()
+    generate_summaries(model, tokenizer, args)
