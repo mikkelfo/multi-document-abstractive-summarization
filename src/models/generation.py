@@ -81,7 +81,7 @@ def single_generation(model, args, log_step):
     else:
         tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 
-    if args.serial:
+    if args.method == 'serial':
         forwards = get_forward(model)
         model = setup_serial_generation(model)
 
