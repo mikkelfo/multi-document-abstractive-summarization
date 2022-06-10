@@ -116,7 +116,7 @@ def single_generation(model, args, log_step):
     wandb.log({'R-L': r3}, step=log_step)
 
     model.train()
-    if args.serial:
+    if args.method == 'serial':
         model = revert_forwards(model, forwards)
 
 if __name__ == '__main__':
