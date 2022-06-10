@@ -86,6 +86,7 @@ def single_generation(model, args, log_step):
         model = setup_serial_generation(model)
 
     summaries = []
+    N_chunks = len(os.listdir(f'data/processed/{args.dir}/text/test'))
     for chunk_idx in range(N_chunks):
         for batch in process_chunk('test', chunk_idx, args):
             input_ids, attention_mask, _ = batch
