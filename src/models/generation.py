@@ -8,6 +8,8 @@ import argparse
 from generation_utils import setup_serial_generation, get_forward, revert_forwards
 from prophetnet_fixes import prophetnet_fixes
 import wandb
+from nltk.tokenize import sent_tokenize
+import rouge
 
 def setup():
     parser = argparse.ArgumentParser(description='Training script for SDS ProphetNet')
@@ -99,7 +101,7 @@ def single_generation(model, args, log_step):
             summaries += gen_summary
 
     summaries = ['\n'.join(sent_tokenize(summ)) for summ in summaries]
-    with open(f'summaries/{wandb.run.name}/{step}.json', 'w') as file:
+    with open(f'summaries/{wandb.run.name}/{log_step}.json', 'w') as file:
         json.dump(summaries, file, indent=4)
 
     with open(f'data/processed/references/{args.dir.split("/")[0]}.json', 'r') as f:
@@ -108,13 +110,13 @@ def single_generation(model, args, log_step):
     evaluator = rouge.Rouge(metrics=['rouge-n', 'rouge-l'], max_n=2, apply_avg=True, alpha=0.5,
                             stemming=True if 'danewsroom' not in args.dir else False)
 
-    scores = evaluator.get_scores(summaries, reference)
-    r1 = s['rouge-1']['f']
-    r2 = s['rouge-2']['f']
-    rl = s['rouge-l']['f']
+    scores = evaluator.get_scores(summaries, references)
+    r1 = scores['rouge-1']['f']
+    r2 = scores['rouge-2']['f']
+    rl = scores['rouge-l']['f']
     wandb.log({'R-1': r1}, step=log_step)
     wandb.log({'R-2': r2}, step=log_step)
-    wandb.log({'R-L': r3}, step=log_step)
+    wandb.log({'R-L': rl}, step=log_step)
 
     model.train()
     if args.method == 'serial':
