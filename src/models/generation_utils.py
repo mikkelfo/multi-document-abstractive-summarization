@@ -57,3 +57,12 @@ def setup_serial_generation(model):
     for layer in model.prophetnet.decoder.layers:
         layer.forward = types.MethodType(serial_forward, layer)
     return model
+
+def get_forward(model):
+    return [layer.forward for layer in model.prophetnet.decoder.layers]
+
+def revert_forwards(model, forwards):
+    for i in range(len(forwards)):
+        layer = model.prophetnet.decoder.layers[i]
+        layer.forward = types.MethodType(forwards[i], layer)
+    return model

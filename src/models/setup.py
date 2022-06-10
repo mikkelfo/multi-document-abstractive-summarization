@@ -5,6 +5,7 @@ import wandb
 import os
 from utils import implement_serial_input
 from prophetnet_fixes import prophetnet_fixes
+from generation_utils import setup_serial_generation
 
 
 def setup():
@@ -56,7 +57,6 @@ def setup():
 
     if args.method == 'serial':
         model = implement_serial_input(model)
-        model = setup_serial_generation(model)
     
     model = prophetnet_fixes(model)
     

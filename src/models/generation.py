@@ -5,7 +5,7 @@ from transformers import ProphetNetTokenizer, XLMProphetNetTokenizer
 import json
 from utils import process_chunk
 import argparse
-from generation_utils import setup_serial_generation
+from generation_utils import setup_serial_generation, get_forward, revert_forwards
 from prophetnet_fixes import prophetnet_fixes
 import wandb
 
@@ -81,6 +81,10 @@ def single_generation(model, args, log_step):
     else:
         tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 
+    if args.serial:
+        forwards = get_forward(model)
+        model = setup_serial_generation(model)
+
     summaries = []
     for chunk_idx in range(N_chunks):
         for batch in process_chunk('test', chunk_idx, args):
@@ -110,8 +114,10 @@ def single_generation(model, args, log_step):
     wandb.log({'R-1': r1}, step=log_step)
     wandb.log({'R-2': r2}, step=log_step)
     wandb.log({'R-L': r3}, step=log_step)
-    
+
     model.train()
+    if args.serial:
+        model = revert_forwards(model, forwards)
 
 if __name__ == '__main__':
     model, tokenizer, args = setup()
