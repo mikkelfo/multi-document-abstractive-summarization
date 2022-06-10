@@ -13,7 +13,8 @@ def train(model, optimizer, args):
     N_CHUNKS_TRAIN = len(os.listdir(f'data/processed/{args.dir}/text/train'))
     for epoch in range(args.epochs):
         chunk_indices = list(range(N_CHUNKS_TRAIN))
-        random.shuffle(chunk_indices)
+        if args.shuffle:
+            random.shuffle(chunk_indices)
         for i, chunk_idx in enumerate(chunk_indices):
             log_step = (epoch*N_CHUNKS_TRAIN) + i + 1   # +1 since we start counting from 1
             chunk_loss = 0

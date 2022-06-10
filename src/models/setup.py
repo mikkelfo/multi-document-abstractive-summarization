@@ -15,7 +15,9 @@ def setup():
     parser.add_argument('--epochs', default=10, type=int, help="Number of epochs")
     parser.add_argument('--batch_size', default=1, type=int, help="Micro-batch size")
     parser.add_argument('--token_length', default=256, type=int, help="Number of tokens")
-    parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved ")
+    parser.add_argument('--checkpointing', default=100, type=int, help="How often the model is saved")
+    parser.add_argument('--shuffle', const=True, default=False, nargs="?", help="Shuffle chunks during training")
+    parser.add_argument('--watch', const=True, default=False, nargs="?", help="Activate wandb.watch")
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
     parser.add_argument('--method', type=str, help="Which MDS method to use")
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
@@ -64,6 +66,8 @@ def setup():
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
     wandb.config.update(args)
+    if args.watch:
+        wandb.watch(model)
 
     return model, optimizer, args
     
