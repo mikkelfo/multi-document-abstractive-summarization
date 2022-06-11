@@ -64,5 +64,5 @@ def get_forward(model):
 def revert_forwards(model, forwards):
     for i in range(len(forwards)):
         layer = model.prophetnet.decoder.layers[i]
-        layer.forward = types.MethodType(forwards[i], layer)
+        layer.forward = forwards[i]
     return model
