@@ -81,3 +81,11 @@ def setup_checkpointing():
     if not os.path.isdir(f'checkpoints/{run_name}'):
         os.mkdir(f'checkpoints/{run_name}')
 
+
+def setup_summaries():
+    if not os.path.isdir('summaries'):
+        os.mkdir('summaries')
+    run_name = wandb.run.name
+    if not os.path.isdir(f'summaries/{run_name}'):
+        os.mkdir(f'summaries/{run_name}')
+
