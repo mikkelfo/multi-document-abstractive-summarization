@@ -32,7 +32,7 @@ def setup():
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
 
     # Scheduler
-    parser.add_argument('--scheduler', const=True, default=False, help='Use InverseSqrtScheduler')
+    parser.add_argument('--scheduler', const=True, default=False, nargs="?", help='Use InverseSqrtScheduler')
     parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip grad norm")
     parser.add_argument('--clip_value', default=1, type=float, help="Gradient clip grad value")
     parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
