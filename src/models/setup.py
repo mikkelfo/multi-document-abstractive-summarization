@@ -48,7 +48,6 @@ def setup():
     assert args.gpus >= 0
     assert args.method is None or args.method == 'mean' or args.method == 'serial' or args.method == 'sds'
     assert args.serial_strat == 'prio' or args.serial_strat == 'shuffle' or args.serial_strat == None
-    assert args.clip_norm > 0
     assert args.warmup_updates >= 0
     assert args.warmup_init_lr > 0
     assert args.warmup_init_lr > 0
