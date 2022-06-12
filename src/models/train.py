@@ -27,7 +27,10 @@ def train(model, optimizer, scheduler, args):
                 loss.backward()
                 chunk_loss += loss.item()
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
+            if args.clip_norm:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
+            elif args.clip_value:
+                torch.nn.utils.clip_grad_value_(model.parameters(), args.clip_value)
             optimizer.step()
             if scheduler:
                 scheduler.step()
@@ -42,11 +45,13 @@ def train(model, optimizer, scheduler, args):
                 torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_step{log_step}.pt')
                 validation_loss = validate(model, args)
                 wandb.log({'Validation loss': validation_loss}, step=log_step)
-                single_generation(model, args, log_step)
+                if args.generation:
+                    single_generation(model, args, log_step)
 
         # Save model end of epoch and validate
         torch.save(model.state_dict(), f'checkpoints/{wandb.run.name}/epoch{epoch}_end.pt')
         validation_loss = validate(model, args)
         wandb.log({'Validation loss': validation_loss}, step=log_step)
-        single_generation(model, args, log_step)
+        if args.generation:
+            single_generation(model, args, log_step)
     

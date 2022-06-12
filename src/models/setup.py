@@ -1,6 +1,7 @@
 import argparse
 from transformers import XLMProphetNetForConditionalGeneration, ProphetNetForConditionalGeneration
 import torch
+import random
 import wandb
 import os
 from utils import implement_serial_input
@@ -22,6 +23,8 @@ def setup():
     parser.add_argument('--shuffle', const=True, default=False, nargs="?", help="Shuffle chunks during training")
     parser.add_argument('--watch', const=True, default=False, nargs="?", help="Activate wandb.watch")
     parser.add_argument('--fix', const=True, default=False, nargs="?", help="Activate fix for batch issues")
+    parser.add_argument('--generation', const=True, default=False, nargs="?", help="Generate summaries after validation step")
+    parser.add_argument('--seed', type=int)
 
     # Multi-document strategies
     parser.add_argument('--mds', const=True, default=False, nargs="?", help="Activate MDS setup")
@@ -30,7 +33,8 @@ def setup():
 
     # Scheduler
     parser.add_argument('--scheduler', const=True, default=False, help='Use InverseSqrtScheduler')
-    parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip norm value")
+    parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip grad norm")
+    parser.add_argument('--clip_value', default=1, type=float, help="Gradient clip grad value")
     parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
     parser.add_argument('--warmup_init_lr', default=1e-07, type=float, help="Scheduler init lr")
     parser.add_argument('--warmup_end_lr', default=1e-4, type=float, help="Scheduler end lr")
@@ -83,6 +87,10 @@ def setup():
     else:
         scheduler = None
     print("Directory:", args.dir)
+
+    if args.seed:
+        torch.manual_seed(args.seed)
+        random.seed(0)
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
     wandb.config.update(args)
