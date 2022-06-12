@@ -5,7 +5,6 @@ import wandb
 import os
 from utils import implement_serial_input
 from prophetnet_fixes import prophetnet_fixes
-from generation_utils import setup_serial_generation
 from scheduler import InverseSqrtScheduler
 
 
@@ -30,6 +29,7 @@ def setup():
     parser.add_argument('--serial_strat', type=str, help="Which serial strategy to use (shuffle/prio)")
 
     # Scheduler
+    parser.add_argument('--scheduler', const=True, default=False, help='Use InverseSqrtScheduler')
     parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip norm value")
     parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
     parser.add_argument('--warmup_init_lr', default=1e-07, type=float, help="Scheduler init lr")
@@ -78,8 +78,10 @@ def setup():
         model = prophetnet_fixes(model)
     
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=0.01)
-    scheduler = InverseSqrtScheduler(optimizer, warmup_updates=args.warmup_updates, warmup_init_lr=args.warmup_init_lr, warmup_end_lr=args.warmup_end_lr)
-
+    if args.scheduler:
+        scheduler = InverseSqrtScheduler(optimizer, warmup_updates=args.warmup_updates, warmup_init_lr=args.warmup_init_lr, warmup_end_lr=args.warmup_end_lr)
+    else:
+        scheduler = None
     print("Directory:", args.dir)
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")

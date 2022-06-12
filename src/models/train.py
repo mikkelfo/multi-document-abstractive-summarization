@@ -29,7 +29,8 @@ def train(model, optimizer, scheduler, args):
 
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
             optimizer.step()
-            scheduler.step()
+            if scheduler:
+                scheduler.step()
             optimizer.zero_grad(set_to_none=True)
             torch.cuda.empty_cache()
 
