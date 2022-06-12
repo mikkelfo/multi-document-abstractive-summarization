@@ -33,8 +33,8 @@ def setup():
 
     # Scheduler
     parser.add_argument('--scheduler', const=True, default=False, nargs="?", help='Use InverseSqrtScheduler')
-    parser.add_argument('--clip_norm', default=1, type=float, help="Gradient clip grad norm")
-    parser.add_argument('--clip_value', default=1, type=float, help="Gradient clip grad value")
+    parser.add_argument('--clip_norm', type=float, help="Gradient clip grad norm")
+    parser.add_argument('--clip_value', type=float, help="Gradient clip grad value")
     parser.add_argument('--warmup_updates', default=1000, type=int, help="Scheduler warmup updates")
     parser.add_argument('--warmup_init_lr', default=1e-07, type=float, help="Scheduler init lr")
     parser.add_argument('--warmup_end_lr', default=1e-4, type=float, help="Scheduler end lr")
