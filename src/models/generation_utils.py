@@ -29,14 +29,24 @@ def serial_forward(self,hidden_states,attention_mask=None,encoder_hidden_states=
     if encoder_hidden_states is not None:
         # SERIAL INPUT
         for i in range(batch_size):
-            attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
-                hidden_states=hidden_states,
-                key_value_states=encoder_hidden_states[i*num_beams:(i+1)*num_beams],
-                attention_mask=encoder_attn_mask[(i*num_beams):(i+1)*num_beams],
-                layer_head_mask=cross_attn_layer_head_mask,
-                past_key_value=cross_attn_past_key_value,
-                output_attentions=output_attentions,
-            )
+            if len(encoder_attn_mask.shape) == 4:   # With ProphetNet fix
+                attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
+                    hidden_states=hidden_states,
+                    key_value_states=encoder_hidden_states[i*num_beams:(i+1)*num_beams],
+                    attention_mask=encoder_attn_mask[(i*num_beams):(i+1)*num_beams],
+                    layer_head_mask=cross_attn_layer_head_mask,
+                    past_key_value=cross_attn_past_key_value,
+                    output_attentions=output_attentions,
+                )
+            elif len(encoder_attn_mask.shape) == 3: # Without ProphetNet fix
+                attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
+                    hidden_states=hidden_states,
+                    key_value_states=encoder_hidden_states[i*num_beams*16:(i+1)*num_beams*16],
+                    attention_mask=encoder_attn_mask[(i*num_beams*16):(i+1)*num_beams*16],
+                    layer_head_mask=cross_attn_layer_head_mask,
+                    past_key_value=cross_attn_past_key_value,
+                    output_attentions=output_attentions,
+                )
             hidden_states = self.cross_attn_layer_norm(attention_output + hidden_states)
             present_key_value = present_key_value + cross_attn_present_key_value
 
