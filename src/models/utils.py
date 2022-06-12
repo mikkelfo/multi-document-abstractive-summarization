@@ -131,14 +131,26 @@ def serial_forward(
         # SERIAL INPUT
         for i in range(len(encoder_hidden_states)):
             # 2nd residual block
-            attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
-                hidden_states=hidden_states,
-                key_value_states=encoder_hidden_states[i:i+1],
-                attention_mask=encoder_attn_mask[i:i+1],
-                layer_head_mask=cross_attn_layer_head_mask,
-                past_key_value=cross_attn_past_key_value,
-                output_attentions=output_attentions,
-            )
+            if len(encoder_attn_mask.shape) == 4:   # With ProphetNet fix
+                attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
+                    hidden_states=hidden_states,
+                    key_value_states=encoder_hidden_states[i:i+1],
+                    attention_mask=encoder_attn_mask[i:i+1],
+                    layer_head_mask=cross_attn_layer_head_mask,
+                    past_key_value=cross_attn_past_key_value,
+                    output_attentions=output_attentions,
+                )
+            elif len(encoder_attn_mask.shape) == 3: # Without ProphetNet fix
+                attention_output, cross_attn_weights, cross_attn_present_key_value = self.cross_attn(
+                    hidden_states=hidden_states,
+                    key_value_states=encoder_hidden_states[i:i+1],
+                    attention_mask=encoder_attn_mask[i*16:(i*16)+1],
+                    layer_head_mask=cross_attn_layer_head_mask,
+                    past_key_value=cross_attn_past_key_value,
+                    output_attentions=output_attentions,
+                )
+            else:
+                raise Exception('Error with serial forward pass')
             hidden_states = self.cross_attn_layer_norm(attention_output + hidden_states)
 
             # add cross-attn to positions 3,4 of present_key_value tuple
