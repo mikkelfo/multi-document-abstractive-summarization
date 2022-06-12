@@ -140,10 +140,33 @@ def process_wcep(dir, cluster_size):
             data.append((cluster['summary'], text))
         with open(f'data/processed/{dir}/{name}{cluster_size}.json', 'w') as file:
             json.dump(data, file, indent=4)
+
+
+'''
+    *****       DUC 2004    *****
+'''
+def process_duc():
+    docs, references = [], []
+    doc_path = 'data/raw/duc/DUC2004_Summarization_Documents/duc2004_testdata/tasks1and2/duc2004_tasks1and2_docs/docs'
+    summ_path = 'data/raw/duc/reference'
+    dirs = [int(dir) for dir in os.listdir(doc_path)]
+
+    for dir in dirs:
+        dir_summ = [open(f'{summ_path}/Task{dir}_reference{i}.txt', 'r').read() for i in range(1, 5)]
+        dir_docs = [open(f'{doc_path}/{dir}/D{i}.txt', 'r').read().replace("\n", "").replace("``", '"').replace("''", '"') for i in range(1, 11)]
+        references.append(dir_summ)
+        docs.append(dir_docs)
+
+    with open('data/processed/duc/reference.json', 'w') as f:
+        json.dump(references, f, indent=4)
+    with open('data/processed/duc/docs.json', 'w') as f:
+        json.dump(docs, f, indent=4)
+
         
 
 if __name__ == '__main__':
     # process_cnndm()
     # split_cnndm()
     # process_wcep('wcep', 8)
-    process_wcep('wcep', 100)
+    # process_wcep('wcep', 100)
+    process_duc()
