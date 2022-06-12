@@ -9,8 +9,6 @@ import random
 import math
 from utils import read_jsonl_gz
 
-random.seed(10)
-
 ''' 
     *****     CNN/Dailymail     ***** 
 '''

@@ -89,7 +89,7 @@ def setup():
 
     if args.seed:
         torch.manual_seed(args.seed)
-        random.seed(0)
+        random.seed(args.seed)
 
     wandb.init(project="abstractive-summarization-runs", entity="mikkelfo")
     wandb.config.update(args)
