@@ -46,7 +46,7 @@ def chunk_and_tokenize_df(dir, cased, chunk_size=512):
             torch.save(tokenized_summary, f'data/processed/{dir}/summary/{name}/chunk_{i // chunk_size}.pt')
 
 
-def chunk_and_tokenize_wcep(dir, cased, chunk_size=512):
+def chunk_and_tokenize_wcep(dir, cased, chunk_size=64):
     prepare_directory(dir)
     if cased:
         tokenizer = XLMProphetNetTokenizer.from_pretrained("microsoft/xprophetnet-large-wiki100-cased")
@@ -74,7 +74,6 @@ if __name__ == '__main__':
     # chunk_and_tokenize_json('cnn-dm', cased=False)
     # chunk_and_tokenize_json('cnn-dm_cased', cased=True)
     # chunk_and_tokenize_df('danewsroom/abstractive', cased=True)
-    # chunk_and_tokenize_wcep('wcep', cased=False)
+    chunk_and_tokenize_wcep('wcep', cased=False)
     # chunk_and_tokenize_wcep('wcep_cased', cased=True)
-    chunk_and_tokenize_wcep('wcep100', cased=False)
 
