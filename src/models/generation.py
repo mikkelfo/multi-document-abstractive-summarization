@@ -103,6 +103,7 @@ def single_generation(model, args, log_step):
     summaries = ['\n'.join(sent_tokenize(summ)) for summ in summaries]
     with open(f'summaries/{wandb.run.name}/{log_step}.json', 'w') as file:
         json.dump(summaries, file, indent=4)
+    print('Example summary:', summaries[0])
 
     with open(f'data/processed/references/{args.dir.split("/")[0]}.json', 'r') as f:
         references = json.load(f)
