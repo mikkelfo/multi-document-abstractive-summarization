@@ -11,7 +11,7 @@ reference = ['\n'.join(sent_tokenize(ref)) for ref in reference]
 with open('data/processed/references/wcep.json', 'w') as f:
     json.dump(reference, f, indent=4)
 
-text, references = zip(*json.load(open('data/processed/cnn-dm/test.json', 'r')))
+text, reference = zip(*json.load(open('data/processed/cnn-dm/test.json', 'r')))
 reference = list(reference)
 reference = ['\n'.join(sent_tokenize(ref)) for ref in reference]
 with open('data/processed/references/cnn-dm.json', 'w') as f:
